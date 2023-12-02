@@ -1,0 +1,4 @@
+debug = false
+
+[apiserver]
+application_url = "0.0.0.0:80"

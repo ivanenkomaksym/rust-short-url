@@ -1,3 +1,4 @@
+use crate::configuration::settings::Settings;
 use crate::constants::APPLICATION_JSON;
 
 use actix_web::{middleware, App, HttpResponse};
@@ -12,7 +13,7 @@ struct Response {
     message: String
 }
 
-pub async fn start_http_server() -> io::Result<()> {
+pub async fn start_http_server(settings: &Settings) -> io::Result<()> {
     HttpServer::new(move || {
         App::new()
             // enable logger - always register actix-web Logger middleware last
@@ -20,7 +21,7 @@ pub async fn start_http_server() -> io::Result<()> {
             // register HTTP requests handlers
             .service(hello)
     })
-    .bind("localhost:8000")?
+    .bind(&settings.apiserver.application_url)?
     .run()
     .await
 }
