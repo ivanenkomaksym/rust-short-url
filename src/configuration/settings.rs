@@ -10,9 +10,16 @@ pub struct ApiServer {
 
 #[derive(Debug, Deserialize)]
 #[allow(unused)]
+pub struct Database {
+    pub connection_string: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(unused)]
 pub struct Settings {
     pub debug: bool,
     pub apiserver: ApiServer,
+    pub database: Option<Database>
 }
 
 impl Settings {
