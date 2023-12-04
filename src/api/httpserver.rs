@@ -52,11 +52,25 @@ async fn shorten(info: web::Query<ShortenRequest>, hash_service: web::Data<Arc<M
 }
 
 #[get("/{short_url}")]
-async fn redirect(path: web::Path<String>) -> HttpResponse {
+async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<dyn HashService>>>) -> HttpResponse {
     let short_url = path.into_inner();
-    dbg!(short_url);
+    if short_url.is_empty() {
+        return HttpResponse::BadRequest()
+            .finish();
+    }
+
+    dbg!(&short_url);
+
+    let long_url: String = match hash_service.lock().unwrap().find(&short_url){
+        None => {
+            return HttpResponse::NotFound()
+                .finish();
+        }
+        Some(value) => value.clone()
+    };
+
     HttpResponse::PermanentRedirect()
-        .append_header(("location", "https://docs.rs/actix-web/latest/actix_web/"))
+        .append_header(("location", long_url))
         .content_type(TEXT_HTML)
         .finish()
 }
