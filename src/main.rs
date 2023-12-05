@@ -1,10 +1,4 @@
-mod api;
-mod configuration;
-mod constants;
-mod services;
-
-#[macro_use]
-extern crate actix_web;
+use rust_short_url::{configuration, services, api};
 
 use std::{env,io, sync::{Arc, Mutex}};
 use configuration::settings::Settings;
