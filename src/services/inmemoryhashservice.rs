@@ -23,14 +23,22 @@ impl hashservice::HashService for InMemoryHashService {
         return hash_value
     }
 
-    fn find(&self, key: &str) -> Option<&LinkInfo> {
+    fn find(&mut self, key: &str) -> Option<&LinkInfo> {
         #[cfg(debug_assertions)]
         // Print the content of the HashMap
         for (key, value) in &self.urls {
             println!("Key: {}, Value: {:?}", key, value);
         }
 
-        return self.urls.get(key);
+        let result: &mut LinkInfo = match self.urls.get_mut(key) {
+            None => return None,
+            Some(value) => {
+                value.clicks += 1;
+                value // Directly return the mutable reference to value
+            }
+        };
+
+        Some(result)
     }
 }
 
