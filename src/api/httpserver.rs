@@ -66,7 +66,7 @@ async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<dyn
             return HttpResponse::NotFound()
                 .finish();
         }
-        Some(value) => value.clone()
+        Some(value) => value.long_url.clone()
     };
 
     HttpResponse::PermanentRedirect()

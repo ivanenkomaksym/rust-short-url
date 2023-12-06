@@ -1,10 +1,10 @@
 use sha2::{Sha256, Digest};
 use std::collections::HashMap;
 
-use crate::services::hashservice;
+use crate::{services::hashservice, models::linkinfo::LinkInfo};
 
 pub struct InMemoryHashService {
-    pub urls: HashMap<String, String>,
+    pub urls: HashMap<String, LinkInfo>,
 }
 
 impl InMemoryHashService {
@@ -18,17 +18,18 @@ impl InMemoryHashService {
 impl hashservice::HashService for InMemoryHashService {
     fn insert(&mut self, value: &str) -> String {
         let hash_value = hash(value);
-        self.urls.entry(hash_value.clone()).or_insert(value.to_string());
-
-        // Print the content of the HashMap
-        for (key, value) in &self.urls {
-            println!("Key: {}, Value: {}", key, value);
-        }
+        self.urls.entry(hash_value.clone()).or_insert(LinkInfo { long_url: value.to_string(), clicks: 0 });
 
         return hash_value
     }
 
-    fn find(&self, key: &str) -> Option<&String> {
+    fn find(&self, key: &str) -> Option<&LinkInfo> {
+        #[cfg(debug_assertions)]
+        // Print the content of the HashMap
+        for (key, value) in &self.urls {
+            println!("Key: {}, Value: {:?}", key, value);
+        }
+
         return self.urls.get(key);
     }
 }

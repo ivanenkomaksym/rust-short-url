@@ -12,11 +12,11 @@ mod tests {
 
         // Act
         let key = hash_service.insert(&expected_long_url);
-        let actual_long_url_result = hash_service.find(&key);
+        let linkinfo_result = hash_service.find(&key);
 
         // Assert
-        assert_ne!(actual_long_url_result, Option::None);
-        let actual_long_url = actual_long_url_result.unwrap();
+        assert_eq!(linkinfo_result.is_none(), false);
+        let actual_long_url = &linkinfo_result.unwrap().long_url;
 
         assert_eq!(&expected_long_url, actual_long_url);
     }
@@ -29,10 +29,10 @@ mod tests {
 
         // Act
         let key = String::from("non_existing_key");
-        let actual_long_url_result = hash_service.find(&key);
+        let linkinfo_result = hash_service.find(&key);
 
         // Assert
-        assert_eq!(actual_long_url_result, Option::None);
+        assert_eq!(linkinfo_result.is_none(), true);
     }
 
     fn setup_settings() -> Settings {
