@@ -28,6 +28,7 @@ pub async fn start_http_server(settings: &Settings, hash_service: Arc<Mutex<dyn 
             .service(hello)
             .service(shorten)
             .service(redirect)
+            .service(summary)
             .app_data(web::Data::new(hash_service.clone()))
     })
     .bind(&settings.apiserver.application_url)?
@@ -73,4 +74,27 @@ async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<dyn
         .append_header(("location", long_url))
         .content_type(TEXT_HTML)
         .finish()
+}
+
+#[get("/{short_url}/summary")]
+async fn summary(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<dyn HashService>>>) -> HttpResponse {
+    let short_url = path.into_inner();
+    if short_url.is_empty() {
+        return HttpResponse::BadRequest()
+            .finish();
+    }
+
+    dbg!(&short_url);
+
+    let linfinfo = match hash_service.lock().unwrap().find(&short_url){
+        None => {
+            return HttpResponse::NotFound()
+                .finish();
+        }
+        Some(value) => value.clone()
+    };
+
+    HttpResponse::Ok()
+        .content_type(APPLICATION_JSON)
+        .json(linfinfo)
 }
