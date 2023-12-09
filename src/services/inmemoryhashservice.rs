@@ -5,6 +5,8 @@ use crate::{services::hashservice, models::linkinfo::LinkInfo};
 
 use async_trait::async_trait;
 
+use super::hashserviceerror::HashServiceError;
+
 pub struct InMemoryHashService {
     pub urls: HashMap<String, LinkInfo>,
 }
@@ -44,8 +46,8 @@ impl hashservice::HashService for InMemoryHashService {
         Some(result)
     }
 
-    async fn init(&mut self) {
-        // empty on purpose
+    async fn init(&mut self) -> Result<(), HashServiceError> {
+        Ok(())
     }
 }
 

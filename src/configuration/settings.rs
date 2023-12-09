@@ -8,7 +8,7 @@ pub struct ApiServer {
     pub application_url: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[allow(unused)]
 pub struct Database {
     pub connection_string: String,
