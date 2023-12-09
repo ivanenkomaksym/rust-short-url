@@ -44,7 +44,7 @@ HttpResponse::Ok()
 }
 
 #[get("/shorten")]
-async fn shorten(info: web::Query<ShortenRequest>, hash_service: web::Data<Arc<Mutex<dyn HashService>>>) -> actix_web::Result<String> {
+async fn shorten(info: web::Query<ShortenRequest>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> actix_web::Result<String> {
     dbg!(&info.long_url);
     let hostname = "localhost:8000";
     let hash = hash_service.lock().unwrap().insert(&info.long_url);
@@ -53,7 +53,7 @@ async fn shorten(info: web::Query<ShortenRequest>, hash_service: web::Data<Arc<M
 }
 
 #[get("/{short_url}")]
-async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<dyn HashService>>>) -> HttpResponse {
+async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> HttpResponse {
     let short_url = path.into_inner();
     if short_url.is_empty() {
         return HttpResponse::BadRequest()
@@ -77,7 +77,7 @@ async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<dyn
 }
 
 #[get("/{short_url}/summary")]
-async fn summary(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<dyn HashService>>>) -> HttpResponse {
+async fn summary(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> HttpResponse {
     let short_url = path.into_inner();
     if short_url.is_empty() {
         return HttpResponse::BadRequest()
