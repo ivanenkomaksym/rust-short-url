@@ -3,6 +3,8 @@ use std::collections::HashMap;
 
 use crate::{services::hashservice, models::linkinfo::LinkInfo};
 
+use async_trait::async_trait;
+
 pub struct InMemoryHashService {
     pub urls: HashMap<String, LinkInfo>,
 }
@@ -15,6 +17,7 @@ impl InMemoryHashService {
     }
 }
 
+#[async_trait]
 impl hashservice::HashService for InMemoryHashService {
     fn insert(&mut self, value: &str) -> String {
         let hash_value = hash(value);
@@ -39,6 +42,10 @@ impl hashservice::HashService for InMemoryHashService {
         };
 
         Some(result)
+    }
+
+    async fn init(&mut self) {
+        // empty on purpose
     }
 }
 

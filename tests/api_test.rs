@@ -7,7 +7,7 @@ mod tests {
     #[actix_web::test]
     async fn test_index_get() {
         let settings = setup_settings();
-        let hash_service = create_hash_service(&settings);
+        let hash_service = create_hash_service(&settings).await;
         let hash_service_arc = Arc::new(Mutex::new(hash_service));
         
         let app = test::init_service({

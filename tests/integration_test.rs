@@ -2,11 +2,11 @@
 mod tests {
     use rust_short_url::{configuration::settings::{Settings, ApiServer}, services::hashservicefactory::create_hash_service};
     
-    #[test]
-    fn test_successful_hashing() {
+    #[actix_rt::test]
+    async fn test_successful_hashing() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings);
+        let mut hash_service = create_hash_service(&settings).await;
 
         let str1 = "string1";
         let str2 = "string2";
@@ -19,11 +19,11 @@ mod tests {
         assert_ne!(key1, key2);
     }
 
-    #[test]
-    fn test_successful_find_inserted_long_url() {
+    #[actix_rt::test]
+    async fn test_successful_find_inserted_long_url() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings);
+        let mut hash_service = create_hash_service(&settings).await;
 
         let expected_long_url = "https://doc.rust-lang.org/";
 
@@ -38,11 +38,11 @@ mod tests {
         assert_eq!(expected_long_url, actual_long_url);
     }
 
-    #[test]
-    fn test_failed_find_not_inserted_long_url() {
+    #[actix_rt::test]
+    async fn test_failed_find_not_inserted_long_url() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings);
+        let mut hash_service = create_hash_service(&settings).await;
 
         // Act
         let key = "non_existing_key";

@@ -4,11 +4,15 @@ use super::hashservice::{self};
 use super::inmemoryhashservice::InMemoryHashService;
 use super::persistenthashservice::PersistentHashService;
 
-pub fn create_hash_service(settings: &Settings) -> Box<dyn hashservice::HashService> {
-    match &settings.database {
-        None => return Box::new(InMemoryHashService::new()),
+pub async fn create_hash_service(settings: &Settings) -> Box<dyn hashservice::HashService> {
+    let mut result: Box<dyn hashservice::HashService> = match &settings.database {
+        None => Box::new(InMemoryHashService::new()),
         Some(database_config) => {
-            return Box::new(PersistentHashService::new(database_config))
+            Box::new(PersistentHashService::new(database_config))
         }
-    }    
+    };
+
+    result.init().await;
+
+    result
 }
