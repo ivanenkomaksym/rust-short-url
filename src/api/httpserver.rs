@@ -19,7 +19,7 @@ struct Response {
     message: String
 }
 
-pub async fn start_http_server(settings: &Settings, hash_service: Arc<Mutex<dyn HashService>>) -> io::Result<()> {
+pub async fn start_http_server(settings: &Settings, hash_service: Arc<Mutex<Box<dyn HashService>>>) -> io::Result<()> {
     HttpServer::new(move|| {
         App::new()
             // enable logger - always register actix-web Logger middleware last

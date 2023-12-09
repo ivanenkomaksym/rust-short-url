@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use rust_short_url::{configuration::settings::{Settings, ApiServer}, services::{hashservicefactory::create_hash_service, hashservice::HashService}};
+    use rust_short_url::{configuration::settings::{Settings, ApiServer}, services::hashservicefactory::create_hash_service};
     
     #[test]
     fn test_successful_hashing() {
