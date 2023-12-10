@@ -1,4 +1,4 @@
 debug = true
 
 [apiserver]
-application_url = "localhost:8000"
+application_url = "localhost:80"
