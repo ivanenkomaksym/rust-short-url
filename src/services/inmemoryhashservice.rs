@@ -21,14 +21,14 @@ impl InMemoryHashService {
 
 #[async_trait]
 impl hashservice::HashService for InMemoryHashService {
-    fn insert(&mut self, value: &str) -> String {
+    async fn insert(&mut self, value: &str) -> String {
         let hash_value = hash(value);
-        self.urls.entry(hash_value.clone()).or_insert(LinkInfo { long_url: value.to_string(), clicks: 0 });
+        self.urls.entry(hash_value.clone()).or_insert(LinkInfo { long_url:value.to_string(),clicks:0, short_url: String::from(value) });
 
         return hash_value
     }
 
-    fn find(&mut self, key: &str) -> Option<&LinkInfo> {
+    async fn find(&mut self, key: &str) -> Option<LinkInfo> {
         #[cfg(debug_assertions)]
         // Print the content of the HashMap
         for (key, value) in &self.urls {
@@ -43,7 +43,7 @@ impl hashservice::HashService for InMemoryHashService {
             }
         };
 
-        Some(result)
+        Some(result.clone())
     }
 
     async fn init(&mut self) -> Result<(), HashServiceError> {

@@ -47,7 +47,7 @@ HttpResponse::Ok()
 async fn shorten(info: web::Query<ShortenRequest>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> actix_web::Result<String> {
     dbg!(&info.long_url);
     let hostname = "localhost:8000";
-    let hash = hash_service.lock().unwrap().insert(&info.long_url);
+    let hash = hash_service.lock().unwrap().insert(&info.long_url).await;
 
     Ok(format!("{}/{}", hostname, hash))
 }
@@ -62,7 +62,7 @@ async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<Box
 
     dbg!(&short_url);
 
-    let long_url: String = match hash_service.lock().unwrap().find(&short_url){
+    let long_url: String = match hash_service.lock().unwrap().find(&short_url).await {
         None => {
             return HttpResponse::NotFound()
                 .finish();
@@ -86,7 +86,7 @@ async fn summary(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<Box<
 
     dbg!(&short_url);
 
-    let linfinfo = match hash_service.lock().unwrap().find(&short_url){
+    let linfinfo = match hash_service.lock().unwrap().find(&short_url).await{
         None => {
             return HttpResponse::NotFound()
                 .finish();

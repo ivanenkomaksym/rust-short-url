@@ -8,7 +8,7 @@ use super::hashserviceerror::HashServiceError;
 pub trait HashService: Send + Sync {
     async fn init(&mut self) -> Result<(), HashServiceError>;
 
-    fn insert(&mut self, value: &str) -> String;
+    async fn insert(&mut self, value: &str) -> String;
 
-    fn find(&mut self, key: &str) -> Option<&LinkInfo>;
+    async fn find(&mut self, key: &str) -> Option<LinkInfo>;
 }
