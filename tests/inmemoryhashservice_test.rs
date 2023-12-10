@@ -12,8 +12,8 @@ mod tests {
         let str2 = "string2";
 
         // Act
-        let key1 = hash_service.insert(str1);
-        let key2 = hash_service.insert(str2);
+        let key1 = hash_service.insert(str1).await;
+        let key2 = hash_service.insert(str2).await;
 
         // Assert
         assert_ne!(key1, key2);
@@ -28,8 +28,8 @@ mod tests {
         let expected_long_url = "https://doc.rust-lang.org/";
 
         // Act
-        let key = hash_service.insert(expected_long_url);
-        let linkinfo_result = hash_service.find(&key);
+        let key = hash_service.insert(expected_long_url).await;
+        let linkinfo_result = hash_service.find(&key).await;
 
         // Assert
         assert_eq!(linkinfo_result.is_none(), false);
@@ -46,7 +46,7 @@ mod tests {
 
         // Act
         let key = "non_existing_key";
-        let linkinfo_result = hash_service.find(key);
+        let linkinfo_result = hash_service.find(key).await;
 
         // Assert
         assert_eq!(linkinfo_result.is_none(), true);
