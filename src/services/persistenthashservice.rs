@@ -1,8 +1,7 @@
-use crate::{services::hashservice, models::linkinfo::LinkInfo, configuration};
+use crate::{services::hashservice, services::hashfunction, models::linkinfo::LinkInfo, configuration};
 use mongodb::{ bson::doc, options::{ ClientOptions, ServerApi, ServerApiVersion }, Client, Collection };
 
 use async_trait::async_trait;
-use sha2::{Sha256, Digest};
 
 use super::hashserviceerror::HashServiceError;
 
@@ -23,7 +22,7 @@ impl PersistentHashService {
 #[async_trait]
 impl hashservice::HashService for PersistentHashService {
     async fn insert(&mut self, value: &str) -> String {
-        let hash_value = hash(value);
+        let hash_value = hashfunction::hash(value);
 
         let find_result = self.find(&hash_value).await;
         if find_result.is_some() {
@@ -69,16 +68,4 @@ impl hashservice::HashService for PersistentHashService {
 
         Ok(())
     }
-}
-
-fn hash(value_to_hash: &str) -> String {
-    let mut sha256 = Sha256::new();
-    sha256.update(value_to_hash);    
-    let hash_result = sha256.finalize();
-
-    // Take the first 4 bytes (32 bits) of the hash and convert them to u32
-    let hash_value = u32::from_be_bytes([hash_result[0], hash_result[1], hash_result[2], hash_result[3]]);
-
-    // Format the u32 as an 8-digit string
-    return format!("{:X}", hash_value)
 }

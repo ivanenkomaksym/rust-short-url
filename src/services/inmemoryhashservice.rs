@@ -1,7 +1,6 @@
-use sha2::{Sha256, Digest};
 use std::collections::HashMap;
 
-use crate::{services::hashservice, models::linkinfo::LinkInfo};
+use crate::{services::hashservice, services::hashfunction, models::linkinfo::LinkInfo};
 
 use async_trait::async_trait;
 
@@ -22,7 +21,7 @@ impl InMemoryHashService {
 #[async_trait]
 impl hashservice::HashService for InMemoryHashService {
     async fn insert(&mut self, value: &str) -> String {
-        let hash_value = hash(value);
+        let hash_value = hashfunction::hash(value);
         self.urls.entry(hash_value.clone()).or_insert(LinkInfo { long_url:value.to_string(),clicks:0, short_url: String::from(value) });
 
         return hash_value
@@ -49,16 +48,4 @@ impl hashservice::HashService for InMemoryHashService {
     async fn init(&mut self) -> Result<(), HashServiceError> {
         Ok(())
     }
-}
-
-fn hash(value_to_hash: &str) -> String {
-    let mut sha256 = Sha256::new();
-    sha256.update(value_to_hash);    
-    let hash_result = sha256.finalize();
-
-    // Take the first 4 bytes (32 bits) of the hash and convert them to u32
-    let hash_value = u32::from_be_bytes([hash_result[0], hash_result[1], hash_result[2], hash_result[3]]);
-
-    // Format the u32 as an 8-digit string
-    return format!("{:X}", hash_value)
 }
