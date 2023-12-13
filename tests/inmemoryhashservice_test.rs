@@ -52,6 +52,31 @@ mod tests {
         assert_eq!(linkinfo_result.is_none(), true);
     }
 
+    #[actix_rt::test]
+    async fn test_summary() {
+        // Arrange
+        let settings = setup_settings();
+        let mut hash_service = create_hash_service(&settings).await;
+
+        let expected_long_url = "https://doc.rust-lang.org/";
+
+        // Act
+        let key = hash_service.insert(expected_long_url).await;
+
+        let mut linkinfo_result = None;
+        let expected_clicks = 20;
+        for _i in 0..expected_clicks {
+            linkinfo_result = hash_service.find(&key).await;
+        }
+
+        // Assert
+        assert_eq!(linkinfo_result.is_none(), false);
+        let actual_linkinfo = &linkinfo_result.unwrap();
+        
+        assert_eq!(actual_linkinfo.long_url, expected_long_url);
+        assert_eq!(actual_linkinfo.clicks, expected_clicks);
+    }
+
     fn setup_settings() -> Settings {
         return Settings { debug: true, apiserver: ApiServer { application_url: String::from("localhost") }, database: None }
     }

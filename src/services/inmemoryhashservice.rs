@@ -34,15 +34,13 @@ impl hashservice::HashService for InMemoryHashService {
             println!("Key: {}, Value: {:?}", key, value);
         }
 
-        let result: &mut LinkInfo = match self.urls.get_mut(key) {
+        match self.urls.get_mut(key) {
             None => return None,
             Some(value) => {
                 value.clicks += 1;
-                value // Directly return the mutable reference to value
+                return Some(value.clone()) // Directly return the mutable reference to value
             }
-        };
-
-        Some(result.clone())
+        }
     }
 
     async fn init(&mut self) -> Result<(), HashServiceError> {
