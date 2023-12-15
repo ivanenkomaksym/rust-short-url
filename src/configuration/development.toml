@@ -2,3 +2,4 @@ debug = true
 
 [apiserver]
 application_url = "localhost:80"
+hostname = "localhost"

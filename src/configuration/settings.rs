@@ -2,10 +2,11 @@ use config::{Config, ConfigError, File};
 use serde::Deserialize;
 use std::env;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[allow(unused)]
 pub struct ApiServer {
     pub application_url: String,
+    pub hostname: String
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -16,7 +17,7 @@ pub struct Database {
     pub collection_name: String
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[allow(unused)]
 pub struct Settings {
     pub debug: bool,

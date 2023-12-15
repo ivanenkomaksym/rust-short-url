@@ -20,6 +20,8 @@ struct Response {
 }
 
 pub async fn start_http_server(settings: &Settings, hash_service: Arc<Mutex<Box<dyn HashService>>>) -> io::Result<()> {
+    let arc_settings = Arc::new(settings.clone());
+
     HttpServer::new(move|| {
         App::new()
             // enable logger - always register actix-web Logger middleware last
@@ -30,6 +32,7 @@ pub async fn start_http_server(settings: &Settings, hash_service: Arc<Mutex<Box<
             .service(redirect)
             .service(summary)
             .app_data(web::Data::new(hash_service.clone()))
+            .app_data(web::Data::new(arc_settings.clone()))
     })
     .bind(&settings.apiserver.application_url)?
     .run()
@@ -44,12 +47,11 @@ HttpResponse::Ok()
 }
 
 #[get("/shorten")]
-async fn shorten(info: web::Query<ShortenRequest>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> actix_web::Result<String> {
+async fn shorten(info: web::Query<ShortenRequest>, settings: web::Data<Arc<Settings>>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> actix_web::Result<String> {
     dbg!(&info.long_url);
-    let hostname = "localhost:8000";
     let hash = hash_service.lock().unwrap().insert(&info.long_url).await;
 
-    Ok(format!("{}/{}", hostname, hash))
+    Ok(format!("{}/{}", settings.apiserver.hostname, hash))
 }
 
 #[get("/{short_url}")]
