@@ -8,14 +8,21 @@
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
 services:
-  server:
+  rust-short-url-server:
     build:
       context: .
       target: final
+    container_name: short-url-server
     environment:
       - RUN_MODE=production
     ports:
       - 80:80
+
+  short-url-mongo:
+    image: mongo
+    container_name: short-url-mongo
+    ports:
+      - 27017:27017
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
