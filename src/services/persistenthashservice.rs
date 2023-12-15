@@ -48,8 +48,12 @@ impl hashservice::HashService for PersistentHashService {
         ).await;
 
         match find_result {
-            Ok(result) => {
-                let mut unwrapped_result = result.unwrap();
+            Ok(option_result) => {
+                let mut unwrapped_result = match option_result {
+                    Some(value) => value,
+                    None => return None,
+                };
+                
                 unwrapped_result.clicks += 1;
                 return Some(unwrapped_result)
             },
