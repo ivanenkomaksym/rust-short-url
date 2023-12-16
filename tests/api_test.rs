@@ -16,7 +16,7 @@ mod tests {
                 .wrap(middleware::Logger::default())
                 // register HTTP requests handlers
                 .service(hello)
-                .service(shorten)
+                .service(web::resource("/shorten").route(web::get().to(shorten)))
                 .service(redirect)
                 .service(summary)
                 .app_data(web::Data::new(hash_service_arc.clone()))

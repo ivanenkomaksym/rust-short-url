@@ -49,7 +49,7 @@ HttpResponse::Ok()
     .json(Response { message: String::from("hello")})
 }
 
-async fn shorten(info: web::Query<ShortenRequest>, settings: web::Data<Arc<Settings>>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> actix_web::Result<String> {
+pub async fn shorten(info: web::Query<ShortenRequest>, settings: web::Data<Arc<Settings>>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> actix_web::Result<String> {
     dbg!(&info.long_url);
     let hash = hash_service.lock().unwrap().insert(&info.long_url).await;
 
