@@ -19,10 +19,18 @@ pub struct Database {
 
 #[derive(Clone, Debug, Deserialize)]
 #[allow(unused)]
+pub struct RateLimit {
+    pub capacity: usize,
+    pub fill_rate: usize
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[allow(unused)]
 pub struct Settings {
     pub debug: bool,
     pub apiserver: ApiServer,
-    pub database: Option<Database>
+    pub database: Option<Database>,
+    pub ratelimit: Option<RateLimit>
 }
 
 impl Settings {

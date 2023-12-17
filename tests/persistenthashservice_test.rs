@@ -14,7 +14,8 @@ mod tests {
         return Settings { 
             debug: true,
             apiserver: ApiServer { application_url: String::from("localhost"), hostname: String::from("localhost") },
-            database: Some(Database { connection_string: String::from("invalid_string"), database_name: String::from("database"), collection_name: String::from("collection") })
+            database: Some(Database { connection_string: String::from("invalid_string"), database_name: String::from("database"), collection_name: String::from("collection") }),
+            ratelimit: None,
         }
     }
 }
