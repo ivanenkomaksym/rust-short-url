@@ -9,7 +9,7 @@ use std::io;
 use std::sync::{Arc, Mutex};
 use serde::{Serialize, Deserialize};
 
-use super::ratelimitermiddleware::RateLimiterMiddleware;
+use super::ratelimitermiddleware::RateLimiterMiddlewareService;
 
 #[derive(Debug, Deserialize)]
 pub struct ShortenRequest {
@@ -21,23 +21,29 @@ struct Response {
     message: String
 }
 
-pub async fn start_http_server(settings: &Settings, hash_service: Arc<Mutex<Box<dyn HashService>>>) -> io::Result<()> {
-    let arc_settings = Arc::new(settings.clone());
+pub async fn start_http_server(settings: Settings, hash_service: Arc<Mutex<Box<dyn HashService>>>) -> io::Result<()> {
+    let application_url = settings.apiserver.application_url.clone();
+    let rate_limit_options = settings.ratelimit.clone().unwrap();
 
     HttpServer::new(move|| {
+        //let rate_limit_options = Arc::new(arc_settings.deref().clone().ratelimit);
+
         App::new()
             // enable logger - always register actix-web Logger middleware last
             .wrap(middleware::Logger::default())
             // register HTTP requests handlers
             .service(hello)
             //.service(shorten)
-            .service(web::resource("/shorten").wrap_fn(|req, srv| RateLimiterMiddleware::new(srv).call(req)).route(web::get().to(shorten)))
+            .service(web::resource("/shorten").wrap_fn(move|req, srv| 
+                {
+                    RateLimiterMiddlewareService::new(srv, rate_limit_options).call(req)
+                }).route(web::get().to(shorten)))
             .service(redirect)
             .service(summary)
             .app_data(web::Data::new(hash_service.clone()))
-            .app_data(web::Data::new(arc_settings.clone()))
+            .app_data(web::Data::new(settings.clone()))
     })
-    .bind(&settings.apiserver.application_url)?
+    .bind(application_url)?
     .run()
     .await
 }

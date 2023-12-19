@@ -2,6 +2,9 @@ use std::future::{ready, Ready};
 use actix_web::{error, Result, Error, dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform}, HttpResponse, http::{StatusCode, header::ContentType}};
 use derive_more::{Display, Error};
 use futures_util::future::LocalBoxFuture;
+use crate::configuration::settings::RateLimit;
+
+use super::ratelimiter::RateLimiter;
 
 #[derive(Debug, Display, Error)]
 enum UserError {
@@ -23,13 +26,14 @@ impl error::ResponseError for UserError {
     }
 }
 
-struct RateLimiter {
+struct RateLimiterMiddleware {
+    rate_limiter: RateLimiter,
 }
 
 // Middleware factory is `Transform` trait
 // `S` - type of the next service
 // `B` - type of response's body
-impl<S, B> Transform<S, ServiceRequest> for RateLimiter
+impl<S, B> Transform<S, ServiceRequest> for RateLimiterMiddleware
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,
@@ -38,25 +42,26 @@ where
     type Response = ServiceResponse<B>;
     type Error = Error;
     type InitError = ();
-    type Transform = RateLimiterMiddleware<S>;
+    type Transform = RateLimiterMiddlewareService<S>;
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(RateLimiterMiddleware { service }))
+        ready(Ok(RateLimiterMiddlewareService { service, _rate_limiter: self.rate_limiter.clone() }))
     }
 }
 
-pub struct RateLimiterMiddleware<S> {
-    service: S,
+pub struct RateLimiterMiddlewareService<S> {
+    pub service: S,
+    pub _rate_limiter: RateLimiter,
 }
 
-impl<S> RateLimiterMiddleware<S> {
-    pub fn new(service: S) -> Self {
-        RateLimiterMiddleware { service }
+impl<S> RateLimiterMiddlewareService<S> {
+    pub fn new(service: S, rate_limiter_options: RateLimit) -> Self {
+        RateLimiterMiddlewareService { service, _rate_limiter: RateLimiter::new(Some(rate_limiter_options)) }
     }
 }
 
-impl<S, B> Service<ServiceRequest> for RateLimiterMiddleware<S>
+impl<S, B> Service<ServiceRequest> for RateLimiterMiddlewareService<S>
 where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     S::Future: 'static,

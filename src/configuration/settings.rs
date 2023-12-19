@@ -17,7 +17,7 @@ pub struct Database {
     pub collection_name: String
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize)]
 #[allow(unused)]
 pub struct RateLimit {
     pub capacity: usize,

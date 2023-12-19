@@ -2,6 +2,7 @@ use std::time::Instant;
 
 use crate::{configuration::settings::RateLimit, constants::{DEFAULT_CAPACITY, DEFAULT_FILL_RATE}};
 
+#[derive(Clone)]
 pub struct RateLimiter {
     pub capacity: usize,
     pub tokens: usize,
@@ -22,8 +23,8 @@ impl RateLimiter {
             }
             None => {
                 RateLimiter {
-                    capacity: DEFAULT_CAPACITY,
                     tokens: DEFAULT_CAPACITY,
+                    capacity: DEFAULT_CAPACITY,
                     fill_rate: DEFAULT_FILL_RATE,
                     last_update: Instant::now()
                 }

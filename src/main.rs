@@ -19,5 +19,5 @@ async fn main() -> io::Result<()> {
     let hash_service = hashservicefactory::create_hash_service(&settings).await;
     let hash_service_arc = Arc::new(Mutex::new(hash_service));
     
-    api::httpserver::start_http_server(&settings, hash_service_arc).await
+    api::httpserver::start_http_server(settings, hash_service_arc).await
 }
