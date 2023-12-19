@@ -1,5 +1,5 @@
-use std::future::{ready, Ready};
-use actix_web::{error, Result, Error, dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform}, HttpResponse, http::{StatusCode, header::ContentType}};
+use std::sync::{Mutex, Arc};
+use actix_web::{error, Result, Error, dev::{forward_ready, Service, ServiceRequest, ServiceResponse}, HttpResponse, http::{StatusCode, header::ContentType}};
 use derive_more::{Display, Error};
 use futures_util::future::LocalBoxFuture;
 use crate::configuration::settings::RateLimit;
@@ -26,38 +26,14 @@ impl error::ResponseError for UserError {
     }
 }
 
-struct RateLimiterMiddleware {
-    rate_limiter: RateLimiter,
-}
-
-// Middleware factory is `Transform` trait
-// `S` - type of the next service
-// `B` - type of response's body
-impl<S, B> Transform<S, ServiceRequest> for RateLimiterMiddleware
-where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
-{
-    type Response = ServiceResponse<B>;
-    type Error = Error;
-    type InitError = ();
-    type Transform = RateLimiterMiddlewareService<S>;
-    type Future = Ready<Result<Self::Transform, Self::InitError>>;
-
-    fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(RateLimiterMiddlewareService { service, _rate_limiter: self.rate_limiter.clone() }))
-    }
-}
-
 pub struct RateLimiterMiddlewareService<S> {
     pub service: S,
-    pub _rate_limiter: RateLimiter,
+    pub rate_limiter: Arc<Mutex<RateLimiter>>,
 }
 
 impl<S> RateLimiterMiddlewareService<S> {
     pub fn new(service: S, rate_limiter_options: RateLimit) -> Self {
-        RateLimiterMiddlewareService { service, _rate_limiter: RateLimiter::new(Some(rate_limiter_options)) }
+        RateLimiterMiddlewareService { service, rate_limiter: Arc::new(Mutex::new(RateLimiter::new(Some(rate_limiter_options)))) }
     }
 }
 
@@ -75,13 +51,14 @@ where
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let fut = self.service.call(req);
+        let rate_limiter = self.rate_limiter.clone();
 
         Box::pin(async move {
-            // Your rate limiting logic goes here
             // Access the rate limiter instance
+            let mut ratelimiter = rate_limiter.lock().unwrap();
 
             // Check if the request can be processed based on the rate limiter
-            if false {
+            if ratelimiter.consume(1) {
                 // Continue processing the request
                 let res = fut.await?;
                 Ok(res)
