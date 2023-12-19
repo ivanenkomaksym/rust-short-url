@@ -1,4 +1,4 @@
-use crate::configuration::settings::Settings;
+use crate::configuration::settings::{Settings, DEFAULT_RATE_LIMIT};
 use crate::constants::{APPLICATION_JSON, TEXT_HTML};
 use crate::services::hashservice::HashService;
 
@@ -6,7 +6,7 @@ use actix_web::dev::Service;
 use actix_web::{middleware, App, HttpResponse, web};
 use actix_web::HttpServer;
 use std::io;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use serde::{Serialize, Deserialize};
 
 use super::ratelimitermiddleware::RateLimiterMiddlewareService;
@@ -21,13 +21,21 @@ struct Response {
     message: String
 }
 
-pub async fn start_http_server(settings: Settings, hash_service: Arc<Mutex<Box<dyn HashService>>>) -> io::Result<()> {
+pub struct AppData {
+    settings: Settings,
+    hash_service: Box<dyn HashService>
+}
+
+pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashService>) -> io::Result<()> {
     let application_url = settings.apiserver.application_url.clone();
-    let rate_limit_options = settings.ratelimit.clone().unwrap();
+    let rate_limit_options = match settings.ratelimit {
+        Some(value) => value,
+        None => DEFAULT_RATE_LIMIT
+    };
+
+    let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
 
     HttpServer::new(move|| {
-        //let rate_limit_options = Arc::new(arc_settings.deref().clone().ratelimit);
-
         App::new()
             // enable logger - always register actix-web Logger middleware last
             .wrap(middleware::Logger::default())
@@ -40,8 +48,7 @@ pub async fn start_http_server(settings: Settings, hash_service: Arc<Mutex<Box<d
                 }).route(web::get().to(shorten)))
             .service(redirect)
             .service(summary)
-            .app_data(web::Data::new(hash_service.clone()))
-            .app_data(web::Data::new(settings.clone()))
+            .app_data(web::Data::clone(&appdata))
     })
     .bind(application_url)?
     .run()
@@ -55,24 +62,27 @@ HttpResponse::Ok()
     .json(Response { message: String::from("hello")})
 }
 
-pub async fn shorten(info: web::Query<ShortenRequest>, settings: web::Data<Arc<Settings>>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> actix_web::Result<String> {
+pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<AppData>>) -> actix_web::Result<String> {
     dbg!(&info.long_url);
-    let hash = hash_service.lock().unwrap().insert(&info.long_url).await;
 
-    Ok(format!("{}/{}", settings.apiserver.hostname, hash))
+    let mut data = appdata.lock().unwrap();
+    let hash = data.hash_service.insert(&info.long_url).await;
+
+    Ok(format!("{}/{}", data.settings.apiserver.hostname, hash))
 }
 
 #[get("/{short_url}")]
-async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> HttpResponse {
+async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
     let short_url = path.into_inner();
     if short_url.is_empty() {
         return HttpResponse::BadRequest()
             .finish();
     }
-
+    
     dbg!(&short_url);
 
-    let long_url: String = match hash_service.lock().unwrap().find(&short_url).await {
+    let mut data = appdata.lock().unwrap();
+    let long_url: String = match data.hash_service.find(&short_url).await {
         None => {
             return HttpResponse::NotFound()
                 .finish();
@@ -87,7 +97,7 @@ async fn redirect(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<Box
 }
 
 #[get("/{short_url}/summary")]
-async fn summary(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<Box<dyn HashService>>>>) -> HttpResponse {
+async fn summary(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
     let short_url = path.into_inner();
     if short_url.is_empty() {
         return HttpResponse::BadRequest()
@@ -96,7 +106,8 @@ async fn summary(path: web::Path<String>, hash_service: web::Data<Arc<Mutex<Box<
 
     dbg!(&short_url);
 
-    let linfinfo = match hash_service.lock().unwrap().find(&short_url).await{
+    let mut data = appdata.lock().unwrap();
+    let linfinfo = match data.hash_service.find(&short_url).await{
         None => {
             return HttpResponse::NotFound()
                 .finish();

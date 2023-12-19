@@ -2,6 +2,8 @@ use config::{Config, ConfigError, File};
 use serde::Deserialize;
 use std::env;
 
+use crate::constants::{DEFAULT_CAPACITY, DEFAULT_FILL_RATE};
+
 #[derive(Clone, Debug, Deserialize)]
 #[allow(unused)]
 pub struct ApiServer {
@@ -23,6 +25,8 @@ pub struct RateLimit {
     pub capacity: usize,
     pub fill_rate: usize
 }
+
+pub const DEFAULT_RATE_LIMIT: RateLimit = RateLimit{ capacity: DEFAULT_CAPACITY, fill_rate: DEFAULT_FILL_RATE };
 
 #[derive(Clone, Debug, Deserialize)]
 #[allow(unused)]
