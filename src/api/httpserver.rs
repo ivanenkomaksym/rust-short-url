@@ -1,4 +1,4 @@
-use crate::configuration::settings::{Settings, DEFAULT_RATE_LIMIT};
+use crate::configuration::settings::Settings;
 use crate::constants::{APPLICATION_JSON, TEXT_HTML};
 use crate::services::hashservice::HashService;
 
@@ -6,9 +6,10 @@ use actix_web::dev::Service;
 use actix_web::{middleware, App, HttpResponse, web};
 use actix_web::HttpServer;
 use std::io;
-use std::sync::Mutex;
+use std::sync::{Mutex, Arc};
 use serde::{Serialize, Deserialize};
 
+use super::ratelimiter::RateLimiter;
 use super::ratelimitermiddleware::RateLimiterMiddlewareService;
 
 #[derive(Debug, Deserialize)]
@@ -22,20 +23,19 @@ struct Response {
 }
 
 pub struct AppData {
-    settings: Settings,
-    hash_service: Box<dyn HashService>
+    pub settings: Settings,
+    pub hash_service: Box<dyn HashService>
 }
 
 pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashService>) -> io::Result<()> {
     let application_url = settings.apiserver.application_url.clone();
-    let rate_limit_options = match settings.ratelimit {
-        Some(value) => value,
-        None => DEFAULT_RATE_LIMIT
-    };
+    let rate_limiter = Arc::new(Mutex::new(RateLimiter::new(settings.ratelimit)));
 
     let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
 
     HttpServer::new(move|| {
+        let rate_limiter = rate_limiter.clone();
+
         App::new()
             // enable logger - always register actix-web Logger middleware last
             .wrap(middleware::Logger::default())
@@ -44,7 +44,8 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
             //.service(shorten)
             .service(web::resource("/shorten").wrap_fn(move|req, srv| 
                 {
-                    RateLimiterMiddlewareService::new(srv, rate_limit_options).call(req)
+                    let rate_limiter = rate_limiter.clone();
+                    RateLimiterMiddlewareService::new(srv, rate_limiter).call(req)
                 }).route(web::get().to(shorten)))
             .service(redirect)
             .service(summary)

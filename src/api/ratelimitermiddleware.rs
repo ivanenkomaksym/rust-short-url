@@ -2,12 +2,11 @@ use std::sync::{Mutex, Arc};
 use actix_web::{error, Result, Error, dev::{forward_ready, Service, ServiceRequest, ServiceResponse}, HttpResponse, http::{StatusCode, header::ContentType}};
 use derive_more::{Display, Error};
 use futures_util::future::LocalBoxFuture;
-use crate::configuration::settings::RateLimit;
 
 use super::ratelimiter::RateLimiter;
 
 #[derive(Debug, Display, Error)]
-enum UserError {
+pub enum UserError {
     #[display(fmt = "You have sent too many requests in a given amount of time. Please try again later.")]
     TooManyRequests,
 }
@@ -32,8 +31,8 @@ pub struct RateLimiterMiddlewareService<S> {
 }
 
 impl<S> RateLimiterMiddlewareService<S> {
-    pub fn new(service: S, rate_limiter_options: RateLimit) -> Self {
-        RateLimiterMiddlewareService { service, rate_limiter: Arc::new(Mutex::new(RateLimiter::new(Some(rate_limiter_options)))) }
+    pub fn new(service: S, rate_limiter: Arc<Mutex<RateLimiter>>) -> Self {
+        RateLimiterMiddlewareService { service, rate_limiter }
     }
 }
 
