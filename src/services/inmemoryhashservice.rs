@@ -22,9 +22,14 @@ impl InMemoryHashService {
 impl hashservice::HashService for InMemoryHashService {
     async fn insert(&mut self, value: &str) -> String {
         let hash_value = hashfunction::hash(value);
-        self.urls.entry(hash_value.clone()).or_insert(LinkInfo { long_url:value.to_string(),clicks:0, short_url: String::from(value) });
+        self.urls.entry(hash_value.clone()).or_insert(LinkInfo { long_url:value.to_string(),clicks:0, short_url: hash_value.clone() });
 
         return hash_value
+    }
+
+    async fn get_links(&self) -> Vec<LinkInfo>
+    {
+        self.urls.iter().map(|key_value| key_value.1.clone()).collect()
     }
 
     async fn find(&mut self, key: &str) -> Option<LinkInfo> {

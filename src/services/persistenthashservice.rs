@@ -1,4 +1,5 @@
 use crate::{services::hashservice, services::hashfunction, models::linkinfo::LinkInfo, configuration};
+use futures_util::TryStreamExt;
 use mongodb::{ bson::doc, options::{ ClientOptions, ServerApi, ServerApiVersion }, Client, Collection };
 
 use async_trait::async_trait;
@@ -75,5 +76,26 @@ impl hashservice::HashService for PersistentHashService {
         self.collection = Some(client.database(&self.database_config.database_name).collection::<LinkInfo>(&self.database_config.collection_name));
 
         Ok(())
+    }
+
+    async fn get_links(&self) -> Vec<LinkInfo>
+    {
+        let coll = match &self.collection {
+            Some(value) => value,
+            None => return [].to_vec()
+        };
+        
+        let cursor_result = coll.find(
+            doc! {}, None
+        ).await;
+        
+        match cursor_result {
+            Ok(cursor) =>
+            {
+                let v: Vec<LinkInfo> = cursor.try_collect().await.expect("");
+                v
+            }
+            Err(err) => panic!("{}", err)
+        }
     }
 }
