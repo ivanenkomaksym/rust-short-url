@@ -41,6 +41,7 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
             .wrap(middleware::Logger::default())
             // register HTTP requests handlers
             .service(hello)
+            .service(urls)
             //.service(shorten)
             .service(web::resource("/shorten").wrap_fn(move|req, srv| 
                 {
@@ -61,6 +62,15 @@ async fn hello() -> HttpResponse {
 HttpResponse::Ok()
     .content_type(APPLICATION_JSON)
     .json(Response { message: String::from("hello")})
+}
+
+#[get("/urls")]
+async fn urls(appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
+    let urls = appdata.lock().unwrap().hash_service.get_links().await;
+
+    HttpResponse::Ok()
+        .content_type(APPLICATION_JSON)
+        .json(urls)
 }
 
 pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<AppData>>) -> actix_web::Result<String> {
