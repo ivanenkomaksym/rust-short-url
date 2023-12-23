@@ -1,4 +1,4 @@
-use crate::models::linkinfo::LinkInfo;
+use crate::models::{linkinfo::LinkInfo, queryparams::QueryParams};
 
 use async_trait::async_trait;
 
@@ -8,7 +8,7 @@ use super::hashserviceerror::HashServiceError;
 pub trait HashService: Send + Sync {
     async fn init(&mut self) -> Result<(), HashServiceError>;
 
-    async fn get_links(&self) -> Vec<LinkInfo>;
+    async fn get_links(&self, query_info: Option<QueryParams>) -> Vec<LinkInfo>;
 
     async fn insert(&mut self, value: &str) -> String;
 

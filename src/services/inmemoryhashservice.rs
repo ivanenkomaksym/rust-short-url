@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{services::hashservice, services::hashfunction, models::linkinfo::LinkInfo};
+use crate::{services::hashservice, services::hashfunction, models::{linkinfo::LinkInfo, queryparams::QueryParams}};
 
 use async_trait::async_trait;
 
@@ -27,9 +27,18 @@ impl hashservice::HashService for InMemoryHashService {
         return hash_value
     }
 
-    async fn get_links(&self) -> Vec<LinkInfo>
+    async fn get_links(&self, query_params: Option<QueryParams>) -> Vec<LinkInfo>
     {
-        self.urls.iter().map(|key_value| key_value.1.clone()).collect()
+        let urls = self.urls.iter().map(|key_value| key_value.1.clone()).collect();
+        let query_params = match query_params {
+            Some(value) => value,
+            None => return urls
+        };
+
+        let top = query_params.top.unwrap_or(urls.len());
+        let skip = query_params.skip.unwrap_or(0);
+        
+        urls.into_iter().skip(skip).take(top).collect()
     }
 
     async fn find(&mut self, key: &str) -> Option<LinkInfo> {

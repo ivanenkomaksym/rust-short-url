@@ -91,7 +91,7 @@ mod tests {
         hash_service.insert(url2).await;
 
         // Act
-        let links = hash_service.get_links().await;
+        let links = hash_service.get_links(None).await;
 
         // Assert
         assert_eq!(links.len(), 2);

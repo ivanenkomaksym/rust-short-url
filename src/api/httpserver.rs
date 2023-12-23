@@ -1,5 +1,6 @@
 use crate::configuration::settings::Settings;
 use crate::constants::{APPLICATION_JSON, TEXT_HTML};
+use crate::models::queryparams::QueryParams;
 use crate::services::hashservice::HashService;
 
 use actix_web::dev::Service;
@@ -65,8 +66,8 @@ HttpResponse::Ok()
 }
 
 #[get("/urls")]
-async fn urls(appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
-    let urls = appdata.lock().unwrap().hash_service.get_links().await;
+async fn urls(query_params: web::Query<QueryParams>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
+    let urls = appdata.lock().unwrap().hash_service.get_links(Some(query_params.0)).await;
 
     HttpResponse::Ok()
         .content_type(APPLICATION_JSON)

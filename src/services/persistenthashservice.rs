@@ -1,4 +1,4 @@
-use crate::{services::hashservice, services::hashfunction, models::linkinfo::LinkInfo, configuration};
+use crate::{services::hashservice, services::hashfunction, models::{linkinfo::LinkInfo, queryparams::QueryParams}, configuration};
 use futures_util::TryStreamExt;
 use mongodb::{ bson::doc, options::{ ClientOptions, ServerApi, ServerApiVersion }, Client, Collection };
 
@@ -78,7 +78,7 @@ impl hashservice::HashService for PersistentHashService {
         Ok(())
     }
 
-    async fn get_links(&self) -> Vec<LinkInfo>
+    async fn get_links(&self, query_params: Option<QueryParams>) -> Vec<LinkInfo>
     {
         let coll = match &self.collection {
             Some(value) => value,
@@ -89,13 +89,23 @@ impl hashservice::HashService for PersistentHashService {
             doc! {}, None
         ).await;
         
-        match cursor_result {
+        let urls = match cursor_result {
             Ok(cursor) =>
             {
-                let v: Vec<LinkInfo> = cursor.try_collect().await.expect("");
-                v
+                let result: Vec<LinkInfo> = cursor.try_collect().await.expect("");
+                result
             }
             Err(err) => panic!("{}", err)
-        }
+        };
+
+        let query_params = match query_params {
+            Some(value) => value,
+            None => return urls
+        };
+        
+        let top = query_params.top.unwrap_or(urls.len());
+        let skip = query_params.skip.unwrap_or(0);
+        
+        urls.into_iter().skip(skip).take(top).collect()
     }
 }
