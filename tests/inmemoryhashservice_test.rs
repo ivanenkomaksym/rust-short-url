@@ -73,8 +73,30 @@ mod tests {
         assert_eq!(linkinfo_result.is_none(), false);
         let actual_linkinfo = &linkinfo_result.unwrap();
         
+        assert_eq!(actual_linkinfo.short_url, key);
         assert_eq!(actual_linkinfo.long_url, expected_long_url);
         assert_eq!(actual_linkinfo.clicks, expected_clicks);
+    }
+
+    #[actix_rt::test]
+    async fn test_get_links() {
+        // Arrange
+        let settings = setup_settings();
+        let mut hash_service = create_hash_service(&settings).await;
+
+        let url1 = "https://doc.rust-lang.org/";
+        let url2 = "https://crates.io/";
+
+        hash_service.insert(url1).await;
+        hash_service.insert(url2).await;
+
+        // Act
+        let links = hash_service.get_links().await;
+
+        // Assert
+        assert_eq!(links.len(), 2);
+        assert!(links.iter().any(|e| e.long_url == url1));
+        assert!(links.iter().any(|e| e.long_url == url2));
     }
 
     fn setup_settings() -> Settings {
