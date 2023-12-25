@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use rust_short_url::{configuration::settings::{Settings, ApiServer}, services::hashservicefactory::create_hash_service};
+    use rust_short_url::{configuration::settings::{Settings, ApiServer}, services::hashservicefactory::create_hash_service, models::queryparams::QueryParams};
     
     #[actix_rt::test]
     async fn test_successful_hashing() {
@@ -97,6 +97,51 @@ mod tests {
         assert_eq!(links.len(), 2);
         assert!(links.iter().any(|e| e.long_url == url1));
         assert!(links.iter().any(|e| e.long_url == url2));
+    }
+
+    #[actix_rt::test]
+    async fn test_top_skip() {
+        // Arrange
+        let settings = setup_settings();
+        let mut hash_service = create_hash_service(&settings).await;
+
+        let urls = [ "https://doc.rust-lang.org/",
+                                "https://crates.io/",
+                                "https://en.wikipedia.org/wiki/Rust_(programming_language)",
+                                "https://github.com/rust-lang",
+                                "https://www.reddit.com/r/rust/" ];
+
+        for url in urls.iter() {
+            hash_service.insert(url).await;
+        };
+
+        // Act
+        let all_links = hash_service.get_links(None).await;
+        let top2_links = hash_service.get_links(Some(QueryParams{ top: Some(2), skip: None })).await;
+        let top6_links = hash_service.get_links(Some(QueryParams{ top: Some(6), skip: None })).await;
+        let skip3_links = hash_service.get_links(Some(QueryParams{ top: None, skip: Some(3) })).await;
+        let skip6_links = hash_service.get_links(Some(QueryParams{ top: None, skip: Some(6) })).await;
+        let top2_skip2_links = hash_service.get_links(Some(QueryParams{ top: Some(2), skip: Some(2) })).await;
+
+        // Assert
+        assert_eq!(all_links.len(), 5);
+
+        assert_eq!(top2_links.len(), 2);
+        assert!(top2_links[0].long_url == all_links[0].long_url);
+        assert!(top2_links[1].long_url == all_links[1].long_url);
+
+        assert_eq!(top6_links.len(), 5);
+
+        assert_eq!(skip3_links.len(), 2);
+        assert!(skip3_links[0].long_url == all_links[3].long_url);
+        assert!(skip3_links[1].long_url == all_links[4].long_url);
+
+        assert_eq!(skip6_links.len(), 0);
+
+        assert_eq!(top2_skip2_links.len(), 2);
+        assert!(top2_skip2_links[0].long_url == all_links[2].long_url);
+        assert!(top2_skip2_links[1].long_url == all_links[3].long_url);
+
     }
 
     fn setup_settings() -> Settings {
