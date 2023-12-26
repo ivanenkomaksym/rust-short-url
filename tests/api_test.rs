@@ -79,6 +79,16 @@ mod tests {
     }
     
     fn setup_settings() -> Settings {
-        return Settings { debug: true, apiserver: ApiServer { application_url: String::from("localhost"), hostname: String::from("localhost") }, database: None, ratelimit: Some(RateLimit {capacity: 2, fill_rate: 2}) }
+        return Settings {
+            debug: true,
+            apiserver: ApiServer { 
+                application_url: String::from("localhost"),
+                hostname: String::from("localhost")
+            },
+            database: None,
+            ratelimit: Some(RateLimit {capacity: 2, fill_rate: 2}),
+            mode: rust_short_url::configuration::settings::Mode::InMemory,
+            coordinator: None
+        }
     }
 }

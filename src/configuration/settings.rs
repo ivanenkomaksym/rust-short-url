@@ -1,9 +1,23 @@
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
-use std::env;
+use std::{env, fmt};
 use clap::Parser;
 
 use crate::constants::{DEFAULT_CAPACITY, DEFAULT_FILL_RATE};
+
+#[derive(clap::ValueEnum, Default, Clone, Debug, Deserialize)]
+pub enum Mode {
+    #[default]
+    InMemory,
+    Persistent,
+    Coordinator
+}
+
+impl fmt::Display for Mode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
 
 #[derive(Clone, Debug, Deserialize)]
 #[allow(unused)]
@@ -39,6 +53,7 @@ pub const DEFAULT_RATE_LIMIT: RateLimit = RateLimit{ capacity: DEFAULT_CAPACITY,
 #[allow(unused)]
 pub struct Settings {
     pub debug: bool,
+    pub mode: Mode,
     pub apiserver: ApiServer,
     pub database: Option<Database>,
     pub ratelimit: Option<RateLimit>,
@@ -47,8 +62,11 @@ pub struct Settings {
 
 #[derive(Parser)]
 struct Args {
+    /// Mode this service will be running in
+    #[clap(short, long, value_enum)]
+    mode: Option<Mode>,
     /// Address this service will be running on
-    #[arg(long)]
+    #[arg(short, long)]
     application_url: Option<String>,
     /// List of host names separated by space to coordinate requests between
     #[arg(long)]
@@ -71,6 +89,11 @@ impl Settings {
             ));
 
         let args = Args::parse();
+        if let Some(value) = args.mode {
+            config_builder = Box::new(config_builder.clone()
+                .set_override("mode", value.to_string())?)
+        }
+
         if let Some(value) = args.application_url {
             config_builder = Box::new(config_builder.clone()
                 .set_override("apiserver.application_url", value.clone())?

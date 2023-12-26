@@ -1,4 +1,5 @@
 debug = true
+mode = "InMemory"
 
 [apiserver]
 application_url = "localhost:80"
