@@ -27,6 +27,12 @@ pub struct RateLimit {
     pub fill_rate: usize
 }
 
+#[derive(Clone, Debug, Deserialize)]
+#[allow(unused)]
+pub struct Coordinator {
+    pub hostnames: Vec<String>
+}
+
 pub const DEFAULT_RATE_LIMIT: RateLimit = RateLimit{ capacity: DEFAULT_CAPACITY, fill_rate: DEFAULT_FILL_RATE };
 
 #[derive(Clone, Debug, Deserialize)]
@@ -35,14 +41,18 @@ pub struct Settings {
     pub debug: bool,
     pub apiserver: ApiServer,
     pub database: Option<Database>,
-    pub ratelimit: Option<RateLimit>
+    pub ratelimit: Option<RateLimit>,
+    pub coordinator: Option<Coordinator>
 }
 
 #[derive(Parser)]
 struct Args {
     /// Address this service will be running on
-    #[arg(short, long)]
+    #[arg(long)]
     application_url: Option<String>,
+    /// List of host names separated by space to coordinate requests between
+    #[arg(long)]
+    hostnames: Option<String>
 }
 
 impl Settings {
@@ -65,6 +75,13 @@ impl Settings {
             config_builder = Box::new(config_builder.clone()
                 .set_override("apiserver.application_url", value.clone())?
                 .set_override("apiserver.hostname", value)?);
+        }
+        
+        if let Some(value) = args.hostnames {
+            let hostnames = (value as String).split(' ').map(|x| x.to_string()).collect::<Vec<String>>();
+
+            config_builder = Box::new(config_builder.clone()
+                .set_override("coordinator.hostnames", hostnames)?);
         }
 
         let config = config_builder
