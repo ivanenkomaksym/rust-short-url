@@ -3,11 +3,11 @@ mod tests {
     use rust_short_url::{configuration::settings::{Settings, ApiServer, Database}, services::hashservicefactory::create_hash_service};
 
     #[actix_rt::test]
-    #[should_panic(expected = "Problem initializing hash service")]
+    #[should_panic(expected = "connection string contains no scheme")]
     async fn test_failed_connection() {
         // Arrange
         let settings = setup_settings();
-        let _hash_service = create_hash_service(&settings).await;
+        let _hash_service = create_hash_service(&settings).await.unwrap();
     }
 
     fn setup_settings() -> Settings {

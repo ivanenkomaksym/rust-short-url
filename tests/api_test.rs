@@ -7,7 +7,7 @@ mod tests {
     #[actix_web::test]
     async fn test_index_get() {
         let settings = setup_settings();
-        let hash_service = create_hash_service(&settings).await;
+        let hash_service = create_hash_service(&settings).await.unwrap();
         let hash_service_arc = Arc::new(Mutex::new(hash_service));
         
         let app = test::init_service({
@@ -30,7 +30,7 @@ mod tests {
     #[actix_web::test]
     async fn test_rate_limit() {
         let settings = setup_settings();
-        let hash_service = create_hash_service(&settings).await;
+        let hash_service = create_hash_service(&settings).await.unwrap();
         let rate_limiter = Arc::new(Mutex::new(RateLimiter::new(settings.ratelimit)));
         let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
 

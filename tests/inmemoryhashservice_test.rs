@@ -6,7 +6,7 @@ mod tests {
     async fn test_successful_hashing() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings).await;
+        let mut hash_service = create_hash_service(&settings).await.unwrap();
 
         let str1 = "string1";
         let str2 = "string2";
@@ -23,7 +23,7 @@ mod tests {
     async fn test_successful_find_inserted_long_url() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings).await;
+        let mut hash_service = create_hash_service(&settings).await.unwrap();
 
         let expected_long_url = "https://doc.rust-lang.org/";
 
@@ -42,7 +42,7 @@ mod tests {
     async fn test_failed_find_not_inserted_long_url() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings).await;
+        let mut hash_service = create_hash_service(&settings).await.unwrap();
 
         // Act
         let key = "non_existing_key";
@@ -56,7 +56,7 @@ mod tests {
     async fn test_summary() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings).await;
+        let mut hash_service = create_hash_service(&settings).await.unwrap();
 
         let expected_long_url = "https://doc.rust-lang.org/";
 
@@ -82,7 +82,7 @@ mod tests {
     async fn test_get_links() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings).await;
+        let mut hash_service = create_hash_service(&settings).await.unwrap();
 
         let url1 = "https://doc.rust-lang.org/";
         let url2 = "https://crates.io/";
@@ -103,7 +103,7 @@ mod tests {
     async fn test_top_skip() {
         // Arrange
         let settings = setup_settings();
-        let mut hash_service = create_hash_service(&settings).await;
+        let mut hash_service = create_hash_service(&settings).await.unwrap();
 
         let urls = [ "https://doc.rust-lang.org/",
                                 "https://crates.io/",

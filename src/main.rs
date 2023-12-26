@@ -16,7 +16,10 @@ async fn main() -> io::Result<()> {
     env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
     env_logger::init();
 
-    let hash_service = hashservicefactory::create_hash_service(&settings).await;
+    let hash_service = match hashservicefactory::create_hash_service(&settings).await {
+        Err(e) => panic!("Problem constructing hash service: {:?}", e),
+        Ok(s) => s,
+    };
     
     api::httpserver::start_http_server(settings, hash_service).await
 }

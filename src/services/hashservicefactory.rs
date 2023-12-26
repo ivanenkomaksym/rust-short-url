@@ -3,17 +3,18 @@ use crate::configuration::settings::Mode;
 
 use super::coordinatorhashservice::CoordinatorHashService;
 use super::hashservice::{self};
+use super::hashserviceerror::HashServiceError;
 use super::inmemoryhashservice::InMemoryHashService;
 use super::persistenthashservice::PersistentHashService;
 
-pub async fn create_hash_service(settings: &Settings) -> Box<dyn hashservice::HashService> {
+pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashservice::HashService>, HashServiceError> {
     let mut hash_service: Box<dyn hashservice::HashService> = match &settings.mode {
         Mode::InMemory => {
             Box::new(InMemoryHashService::new())
         },
         Mode::Persistent => {
             match &settings.database {
-                None => panic!(),
+                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Persistent"), configuraiton: String::from("Database") }),
                 Some(database_config) => {
                     Box::new(PersistentHashService::new(database_config))
                 }
@@ -21,7 +22,7 @@ pub async fn create_hash_service(settings: &Settings) -> Box<dyn hashservice::Ha
         },
         Mode::Coordinator => {
             match &settings.coordinator {
-                None => panic!(),
+                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Coordinator"), configuraiton: String::from("Coordinator") }),
                 Some(coordinator_config) => {
                     Box::new(CoordinatorHashService::new(coordinator_config))
                 }
@@ -29,8 +30,6 @@ pub async fn create_hash_service(settings: &Settings) -> Box<dyn hashservice::Ha
         },
     };
 
-    match hash_service.init().await {
-        Ok(_) => return hash_service,
-        Err(e) => panic!("Problem initializing hash service: {:?}", e),
-    };
+    hash_service.init().await?;
+    Ok(hash_service)
 }
