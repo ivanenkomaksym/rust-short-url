@@ -44,7 +44,6 @@ impl hashservice::HashService for CoordinatorHashService {
     async fn init(&mut self) -> Result<(), HashServiceError> {            
         self.host_port_pairs = self.coordinator_config.hostnames.iter().map(|x| {
             let key_value = x.split(':').map(|y| y.to_string()).collect::<Vec<String>>();
-            println!("{}, {}", key_value[0], key_value[1]);
             return (key_value[0].clone(), key_value[1].parse::<usize>().unwrap())
         }).collect::<Vec<(String, usize)>>();
         
@@ -72,7 +71,7 @@ impl hashservice::HashService for CoordinatorHashService {
         let mut result: Vec<LinkInfo> = Vec::<LinkInfo>::new();
 
         for node in &self.nodes {
-            let node_result = match get_links_impl(node.host.clone(), node.port.into(), query_info.clone()).await {
+            let node_result = match get_links_impl(&node.host, node.port.into(), query_info.clone()).await {
                 Ok(value) => value,
                 Err(e) => panic!("{}", e)
             };
@@ -88,27 +87,41 @@ impl hashservice::HashService for CoordinatorHashService {
     }
 
     async fn insert(&mut self, value: &str) -> String {
-        let hash_ring = match &self.hash_ring {
-            Some(value) => value,
-            None => return String::from("")
-        };
+        let mut result: String = String::from("");
 
-        let node = hash_ring.get_node(value.to_string()).unwrap();
-
-        match insert_value(node.host.clone(), node.port.into(), value).await {
-            Ok(value) => value,
-            Err(err) => panic!("{}", err)
+        for node in &self.nodes {
+            let node_result = match insert_impl(&node.host, node.port.into(), value).await {
+                Ok(value) => value,
+                Err(e) => panic!("{}", e)
+            };
+            
+            if result.len() > 0 {
+                // TODO: Error handling in case values are different, so there is an inconsistency between replicas
+            } else {
+                result = node_result;
+            }
         }
+
+        result
     }
 
     async fn find(&mut self, key: &str) -> Option<LinkInfo> {
-        let hash_ring = match &self.hash_ring {
-            Some(value) => value,
-            None => return None
-        };
+        let mut result: Option<LinkInfo> = None;
 
-        let _node = hash_ring.get_node(key.to_string()).unwrap();
-        todo!()
+        for node in &self.nodes {
+            let node_result = match find_impl(&node.host, node.port.into(), key).await {
+                Ok(value) => value,
+                Err(e) => panic!("{}", e)
+            };
+            
+            if result.is_some() {
+                // TODO: Error handling in case values are different, so there is an inconsistency between replicas
+            } else {
+                result = node_result;
+            }
+        }
+
+        result
     }
 }
 
@@ -122,7 +135,7 @@ pub async fn test_connection(host: &String, port: usize) -> Result<(), HashServi
     Ok(())
 }
 
-pub async fn get_links_impl(host: String, port: usize, _query_info: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
+pub async fn get_links_impl(host: &str, port: usize, _query_info: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
     // TODO: Implement QueryParams
 
     let urls = reqwest::get(format!("http://{}:{}/urls", host, port))
@@ -134,7 +147,18 @@ pub async fn get_links_impl(host: String, port: usize, _query_info: Option<Query
     Ok(urls)
 }
 
-pub async fn insert_value(host: String, port: usize, value: &str) -> Result<String, HashServiceError> {
+pub async fn find_impl(host: &str, port: usize, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
+    let response = reqwest::get(format!("http://{}:{}/{}/summary", host, port, key))
+        .await?
+        .json::<LinkInfo>()
+        .await?;
+    
+    println!("{:#?}", response);
+
+    Ok(Some(response))
+}
+
+pub async fn insert_impl(host: &str, port: usize, value: &str) -> Result<String, HashServiceError> {
     let short_url = reqwest::get(format!("http://{}:{}/shorten?long_url={}", host, port, value))
         .await?
             .text()
