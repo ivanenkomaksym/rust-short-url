@@ -13,12 +13,8 @@ pub enum HashServiceError {
     },
     #[error("Internal error")]
     IOError(#[from] io::Error),
-    #[error("Invalid URI")]
-    InvalidURI(#[from] hyper::http::uri::InvalidUri),
-    #[error("HTTP client error")]
-    HttpStreamError(#[from] hyper::Error),
-    #[error("HTTP client error")]
-    HttpConnectionError(#[from] hyper::http::Error),
+    #[error("unknown data store error")]
+    InternalHttpClientError(#[from] reqwest::Error),
     #[error("unknown data store error")]
     Unknown,
 }
