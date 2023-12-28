@@ -24,6 +24,7 @@ impl fmt::Display for Node {
 pub struct CoordinatorHashService {
     coordinator_config: configuration::settings::Coordinator,
     host_port_pairs: Vec<(String, usize)>,
+    nodes: Vec<Node>,
     hash_ring: Option<HashRing<Node>>
 }
 
@@ -32,6 +33,7 @@ impl CoordinatorHashService {
         CoordinatorHashService {
             coordinator_config: config.clone(),
             host_port_pairs: Vec::new(),
+            nodes: Vec::new(),
             hash_ring: None,
         }
     }
@@ -60,13 +62,29 @@ impl hashservice::HashService for CoordinatorHashService {
             });
         }
 
+        self.nodes = nodes.clone();
         self.hash_ring = Some(HashRing::new(nodes, 10));
 
         Ok(())
     }
 
-    async fn get_links(&self, _query_info: Option<QueryParams>) -> Vec<LinkInfo> {
-        todo!("Implement it");
+    async fn get_links(&self, query_info: Option<QueryParams>) -> Vec<LinkInfo> {
+        let mut result: Vec<LinkInfo> = Vec::<LinkInfo>::new();
+
+        for node in &self.nodes {
+            let node_result = match get_links_impl(node.host.clone(), node.port.into(), query_info.clone()).await {
+                Ok(value) => value,
+                Err(e) => panic!("{}", e)
+            };
+
+            if result.len() > 0 {
+                // TODO: Error handling in case values are different, so there is an inconsistency between replicas
+            } else {
+                result = node_result;
+            }
+        }
+
+        result
     }
 
     async fn insert(&mut self, value: &str) -> String {
@@ -102,6 +120,18 @@ pub async fn test_connection(host: &String, port: usize) -> Result<(), HashServi
     println!("{:#?}", resp);
 
     Ok(())
+}
+
+pub async fn get_links_impl(host: String, port: usize, _query_info: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
+    // TODO: Implement QueryParams
+
+    let urls = reqwest::get(format!("http://{}:{}/urls", host, port))
+        .await?
+            .json::<Vec<LinkInfo>>()
+            .await?;
+    println!("{:#?}", urls);
+    
+    Ok(urls)
 }
 
 pub async fn insert_value(host: String, port: usize, value: &str) -> Result<String, HashServiceError> {
