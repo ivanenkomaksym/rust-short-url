@@ -26,7 +26,9 @@ for ($i = 1; $i -le $NumberOfInstances; $i++) {
     $allHostnames += $hostname
 }
 
-$freePort = Get-FreePort
+Start-Sleep 2
+
+$freePort = 80
 $hostname = "localhost:$freePort"
 Start-Process -FilePath "cmd" -ArgumentList "/c .\target\debug\rust-short-url.exe --application-url $hostname -m coordinator --hostnames `"$allHostnames`"" -WorkingDirectory "."
 Write-Output "Coordinator started on port $freePort"

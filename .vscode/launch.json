@@ -1,0 +1,170 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'rust-short-url'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=rust-short-url"
+                ],
+                "filter": {
+                    "name": "rust-short-url",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'rust-short-url'",
+            "cargo": {
+                "args": [
+                    "run",
+                    "--bin=rust-short-url",
+                    "--package=rust-short-url",
+                    "-- --application-url localhost:65472"
+                ],
+                "filter": {
+                    "name": "rust-short-url",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug coordinator",
+            "program": "${workspaceFolder}/target/debug/rust-short-url.exe",
+            "args": ["--application-url=localhost:80", "-m=coordinator", "--hostnames=localhost:64237 localhost:64238 localhost:64239"],
+            "cwd": "${workspaceFolder}",
+            "preRunCommands": [],
+            "terminal": "integrated"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'rust-short-url'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=rust-short-url",
+                    "--package=rust-short-url"
+                ],
+                "filter": {
+                    "name": "rust-short-url",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'api_test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=api_test",
+                    "--package=rust-short-url"
+                ],
+                "filter": {
+                    "name": "api_test",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'hashfunction_test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=hashfunction_test",
+                    "--package=rust-short-url"
+                ],
+                "filter": {
+                    "name": "hashfunction_test",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'inmemoryhashservice_test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=inmemoryhashservice_test",
+                    "--package=rust-short-url"
+                ],
+                "filter": {
+                    "name": "inmemoryhashservice_test",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'persistenthashservice_test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=persistenthashservice_test",
+                    "--package=rust-short-url"
+                ],
+                "filter": {
+                    "name": "persistenthashservice_test",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'ratelimiter_test'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=ratelimiter_test",
+                    "--package=rust-short-url"
+                ],
+                "filter": {
+                    "name": "ratelimiter_test",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

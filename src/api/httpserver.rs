@@ -82,8 +82,6 @@ async fn urls(query_params: web::Query<QueryParams>, appdata: web::Data<Mutex<Ap
 }
 
 pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
-    dbg!(&info.long_url);
-
     let mut data = appdata.lock().unwrap();
     match data.hash_service.insert(&info.long_url).await {
         Err(err) => {
@@ -106,8 +104,6 @@ async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) -
         return HttpResponse::BadRequest()
             .finish();
     }
-    
-    dbg!(&short_url);
 
     let mut data = appdata.lock().unwrap();
     let long_url: String = match data.hash_service.find(&short_url).await {
@@ -131,8 +127,6 @@ async fn summary(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) ->
         return HttpResponse::BadRequest()
             .finish();
     }
-
-    dbg!(&short_url);
 
     let mut data = appdata.lock().unwrap();
     let linkinfo = match data.hash_service.find(&short_url).await{
