@@ -148,10 +148,13 @@ pub async fn get_links_impl(host: &str, port: usize, _query_info: Option<QueryPa
 }
 
 pub async fn find_impl(host: &str, port: usize, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
-    let response = reqwest::get(format!("http://{}:{}/{}/summary", host, port, key))
+    let response = match reqwest::get(format!("http://{}:{}/{}/summary", host, port, key))
         .await?
         .json::<LinkInfo>()
-        .await?;
+        .await {
+            Ok(value) => value,
+            Err(_) => return Ok(None)
+        };
     
     println!("{:#?}", response);
 
