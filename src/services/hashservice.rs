@@ -10,7 +10,7 @@ pub trait HashService: Send + Sync {
 
     async fn get_links(&self, query_info: Option<QueryParams>) -> Vec<LinkInfo>;
 
-    async fn insert(&mut self, value: &str) -> String;
+    async fn insert(&mut self, value: &str) -> Result<String, HashServiceError>;
 
     async fn find(&mut self, key: &str) -> Option<LinkInfo>;
 }

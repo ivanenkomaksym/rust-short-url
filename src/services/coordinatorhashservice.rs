@@ -86,14 +86,11 @@ impl hashservice::HashService for CoordinatorHashService {
         result
     }
 
-    async fn insert(&mut self, value: &str) -> String {
+    async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
         let mut result: String = String::from("");
 
         for node in &self.nodes {
-            let node_result = match insert_impl(&node.host, node.port.into(), value).await {
-                Ok(value) => value,
-                Err(e) => panic!("{}", e)
-            };
+            let node_result = insert_impl(&node.host, node.port.into(), value).await?;
             
             if result.len() > 0 {
                 // TODO: Error handling in case values are different, so there is an inconsistency between replicas
@@ -102,7 +99,7 @@ impl hashservice::HashService for CoordinatorHashService {
             }
         }
 
-        result
+        Ok(result)
     }
 
     async fn find(&mut self, key: &str) -> Option<LinkInfo> {

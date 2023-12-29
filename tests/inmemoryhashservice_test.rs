@@ -12,11 +12,14 @@ mod tests {
         let str2 = "string2";
 
         // Act
-        let key1 = hash_service.insert(str1).await;
-        let key2 = hash_service.insert(str2).await;
+        let key1_result = hash_service.insert(str1).await;
+        let key2_result = hash_service.insert(str2).await;
 
         // Assert
-        assert_ne!(key1, key2);
+        assert!(key1_result.is_ok());
+        assert!(key2_result.is_ok());
+
+        assert_ne!(key1_result.unwrap(), key2_result.unwrap());
     }
 
     #[actix_rt::test]
@@ -28,7 +31,10 @@ mod tests {
         let expected_long_url = "https://doc.rust-lang.org/";
 
         // Act
-        let key = hash_service.insert(expected_long_url).await;
+        let key_result = hash_service.insert(expected_long_url).await;
+        assert!(key_result.is_ok());
+        let key = key_result.unwrap();
+
         let linkinfo_result = hash_service.find(&key).await;
 
         // Assert
@@ -61,7 +67,9 @@ mod tests {
         let expected_long_url = "https://doc.rust-lang.org/";
 
         // Act
-        let key = hash_service.insert(expected_long_url).await;
+        let key_result = hash_service.insert(expected_long_url).await;
+        assert!(key_result.is_ok());
+        let key = key_result.unwrap();
 
         let mut linkinfo_result = None;
         let expected_clicks = 20;
@@ -87,13 +95,16 @@ mod tests {
         let url1 = "https://doc.rust-lang.org/";
         let url2 = "https://crates.io/";
 
-        hash_service.insert(url1).await;
-        hash_service.insert(url2).await;
+        let result1 = hash_service.insert(url1).await;
+        let result2 = hash_service.insert(url2).await;
 
         // Act
         let links = hash_service.get_links(None).await;
 
         // Assert
+        assert!(result1.is_ok());
+        assert!(result2.is_ok());
+
         assert_eq!(links.len(), 2);
         assert!(links.iter().any(|e| e.long_url == url1));
         assert!(links.iter().any(|e| e.long_url == url2));
@@ -112,7 +123,8 @@ mod tests {
                                 "https://www.reddit.com/r/rust/" ];
 
         for url in urls.iter() {
-            hash_service.insert(url).await;
+            let result = hash_service.insert(url).await;
+            assert!(result.is_ok());
         };
 
         // Act

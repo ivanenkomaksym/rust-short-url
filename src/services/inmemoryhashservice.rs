@@ -20,11 +20,11 @@ impl InMemoryHashService {
 
 #[async_trait]
 impl hashservice::HashService for InMemoryHashService {
-    async fn insert(&mut self, value: &str) -> String {
+    async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
         let hash_value = hashfunction::hash(value);
         self.urls.entry(hash_value.clone()).or_insert(LinkInfo { long_url:value.to_string(),clicks:0, short_url: hash_value.clone() });
 
-        return hash_value
+        return Ok(hash_value)
     }
 
     async fn get_links(&self, query_params: Option<QueryParams>) -> Vec<LinkInfo>
@@ -45,7 +45,7 @@ impl hashservice::HashService for InMemoryHashService {
         #[cfg(debug_assertions)]
         // Print the content of the HashMap
         for (key, value) in &self.urls {
-            println!("Key: {}, Value: {:?}", key, value);
+            log::debug!("Key: {}, Value: {:?}", key, value);
         }
 
         match self.urls.get_mut(key) {

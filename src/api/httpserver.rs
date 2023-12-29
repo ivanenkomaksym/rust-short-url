@@ -74,13 +74,22 @@ async fn urls(query_params: web::Query<QueryParams>, appdata: web::Data<Mutex<Ap
         .json(urls)
 }
 
-pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<AppData>>) -> actix_web::Result<String> {
+pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
     dbg!(&info.long_url);
 
     let mut data = appdata.lock().unwrap();
-    let hash = data.hash_service.insert(&info.long_url).await;
-
-    Ok(format!("{}/{}", data.settings.apiserver.hostname, hash))
+    match data.hash_service.insert(&info.long_url).await {
+        Err(err) => {
+            log::error!("{}", err);
+            return HttpResponse::InternalServerError()
+                .finish();
+        }
+        Ok(value) => {
+            HttpResponse::Ok()
+                .content_type(TEXT_HTML)
+                .body(format!("{}/{}", data.settings.apiserver.hostname, value))
+        }
+    }
 }
 
 #[get("/{short_url}")]
@@ -119,7 +128,7 @@ async fn summary(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) ->
     dbg!(&short_url);
 
     let mut data = appdata.lock().unwrap();
-    let linfinfo = match data.hash_service.find(&short_url).await{
+    let linkinfo = match data.hash_service.find(&short_url).await{
         None => {
             return HttpResponse::NotFound()
                 .finish();
@@ -129,5 +138,5 @@ async fn summary(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) ->
 
     HttpResponse::Ok()
         .content_type(APPLICATION_JSON)
-        .json(linfinfo)
+        .json(linkinfo)
 }

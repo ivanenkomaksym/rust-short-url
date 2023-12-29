@@ -1921,6 +1921,7 @@ dependencies = [
  "hash_ring",
  "http-body-util",
  "hyper-util",
+ "log",
  "mongodb",
  "reqwest",
  "serde",

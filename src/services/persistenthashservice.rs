@@ -22,12 +22,12 @@ impl PersistentHashService {
 
 #[async_trait]
 impl hashservice::HashService for PersistentHashService {
-    async fn insert(&mut self, value: &str) -> String {
+    async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
         let hash_value = hashfunction::hash(value);
 
         let find_result = self.find(&hash_value).await;
         if find_result.is_some() {
-            return hash_value;
+            return Ok(hash_value);
         }
         
         let new_link = LinkInfo{
@@ -36,11 +36,8 @@ impl hashservice::HashService for PersistentHashService {
             clicks: 0
         };
 
-        let insert_result = self.collection.as_mut().unwrap().insert_one(new_link, None).await;
-        match  insert_result {
-            Ok(_) => hash_value,
-            Err(e) => panic!("Problem inserting document: {:?}", e)
-        }
+        self.collection.as_mut().unwrap().insert_one(new_link, None).await?;
+        Ok(hash_value)
     }
 
     async fn find(&mut self, key: &str) -> Option<LinkInfo> {
@@ -102,7 +99,7 @@ impl hashservice::HashService for PersistentHashService {
             Some(value) => value,
             None => return urls
         };
-        
+
         let top = query_params.top.unwrap_or(urls.len());
         let skip = query_params.skip.unwrap_or(0);
         
