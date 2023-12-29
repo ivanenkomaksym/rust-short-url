@@ -55,7 +55,10 @@ impl hashservice::HashService for PersistentHashService {
                 unwrapped_result.clicks += 1;
                 return Some(unwrapped_result)
             },
-            Err(_) => return None
+            Err(err) => {
+                log::warn!("{}", err);
+                return None
+            }
         }
     }
 
@@ -68,41 +71,34 @@ impl hashservice::HashService for PersistentHashService {
         let client = Client::with_options(client_options)?;
         // Send a ping to confirm a successful connection
         client.database("admin").run_command(doc! { "ping": 1 }, None).await?;
-        println!("Pinged your deployment. You successfully connected to MongoDB!");
+        log::debug!("Pinged your deployment. You successfully connected to MongoDB!");
 
         self.collection = Some(client.database(&self.database_config.database_name).collection::<LinkInfo>(&self.database_config.collection_name));
 
         Ok(())
     }
 
-    async fn get_links(&self, query_params: Option<QueryParams>) -> Vec<LinkInfo>
+    async fn get_links(&self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError>
     {
         let coll = match &self.collection {
             Some(value) => value,
-            None => return [].to_vec()
+            None => return Ok([].to_vec())
         };
         
-        let cursor_result = coll.find(
+        let cursor = coll.find(
             doc! {}, None
-        ).await;
+        ).await?;
         
-        let urls = match cursor_result {
-            Ok(cursor) =>
-            {
-                let result: Vec<LinkInfo> = cursor.try_collect().await.expect("");
-                result
-            }
-            Err(err) => panic!("{}", err)
-        };
+        let urls: Vec<LinkInfo> = cursor.try_collect().await.expect("");
 
         let query_params = match query_params {
             Some(value) => value,
-            None => return urls
+            None => return Ok(urls)
         };
 
         let top = query_params.top.unwrap_or(urls.len());
         let skip = query_params.skip.unwrap_or(0);
         
-        urls.into_iter().skip(skip).take(top).collect()
+        Ok(urls.into_iter().skip(skip).take(top).collect())
     }
 }

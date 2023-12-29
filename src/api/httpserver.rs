@@ -67,11 +67,18 @@ HttpResponse::Ok()
 
 #[get("/urls")]
 async fn urls(query_params: web::Query<QueryParams>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
-    let urls = appdata.lock().unwrap().hash_service.get_links(Some(query_params.0)).await;
-
-    HttpResponse::Ok()
-        .content_type(APPLICATION_JSON)
-        .json(urls)
+    match appdata.lock().unwrap().hash_service.get_links(Some(query_params.0)).await {
+        Err(err) => {
+            log::error!("{}", err);
+            return HttpResponse::InternalServerError()
+                .finish();
+        }
+        Ok(urls) => {
+            HttpResponse::Ok()
+                .content_type(APPLICATION_JSON)
+                .json(urls)
+        }
+    }
 }
 
 pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {

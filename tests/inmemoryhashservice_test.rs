@@ -99,9 +99,12 @@ mod tests {
         let result2 = hash_service.insert(url2).await;
 
         // Act
-        let links = hash_service.get_links(None).await;
+        let links_result = hash_service.get_links(None).await;
 
         // Assert
+        assert!(links_result.is_ok());
+        let links = links_result.unwrap();
+
         assert!(result1.is_ok());
         assert!(result2.is_ok());
 
@@ -128,12 +131,12 @@ mod tests {
         };
 
         // Act
-        let all_links = hash_service.get_links(None).await;
-        let top2_links = hash_service.get_links(Some(QueryParams{ top: Some(2), skip: None })).await;
-        let top6_links = hash_service.get_links(Some(QueryParams{ top: Some(6), skip: None })).await;
-        let skip3_links = hash_service.get_links(Some(QueryParams{ top: None, skip: Some(3) })).await;
-        let skip6_links = hash_service.get_links(Some(QueryParams{ top: None, skip: Some(6) })).await;
-        let top2_skip2_links = hash_service.get_links(Some(QueryParams{ top: Some(2), skip: Some(2) })).await;
+        let all_links = hash_service.get_links(None).await.unwrap();
+        let top2_links = hash_service.get_links(Some(QueryParams{ top: Some(2), skip: None })).await.unwrap();
+        let top6_links = hash_service.get_links(Some(QueryParams{ top: Some(6), skip: None })).await.unwrap();
+        let skip3_links = hash_service.get_links(Some(QueryParams{ top: None, skip: Some(3) })).await.unwrap();
+        let skip6_links = hash_service.get_links(Some(QueryParams{ top: None, skip: Some(6) })).await.unwrap();
+        let top2_skip2_links = hash_service.get_links(Some(QueryParams{ top: Some(2), skip: Some(2) })).await.unwrap();
 
         // Assert
         assert_eq!(all_links.len(), 5);

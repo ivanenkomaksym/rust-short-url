@@ -67,14 +67,11 @@ impl hashservice::HashService for CoordinatorHashService {
         Ok(())
     }
 
-    async fn get_links(&self, query_info: Option<QueryParams>) -> Vec<LinkInfo> {
+    async fn get_links(&self, query_info: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
         let mut result: Vec<LinkInfo> = Vec::<LinkInfo>::new();
 
         for node in &self.nodes {
-            let node_result = match get_links_impl(&node.host, node.port.into(), query_info.clone()).await {
-                Ok(value) => value,
-                Err(e) => panic!("{}", e)
-            };
+            let node_result = get_links_impl(&node.host, node.port.into(), query_info.clone()).await?;
 
             if result.len() > 0 {
                 // TODO: Error handling in case values are different, so there is an inconsistency between replicas
@@ -83,7 +80,7 @@ impl hashservice::HashService for CoordinatorHashService {
             }
         }
 
-        result
+        Ok(result)
     }
 
     async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
