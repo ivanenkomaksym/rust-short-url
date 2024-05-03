@@ -10,7 +10,8 @@ pub enum Mode {
     #[default]
     InMemory,
     Mongo,
-    Coordinator
+    Coordinator,
+    Redis
 }
 
 impl fmt::Display for Mode {

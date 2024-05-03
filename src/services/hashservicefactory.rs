@@ -6,6 +6,7 @@ use super::hashservice::{self};
 use super::hashserviceerror::HashServiceError;
 use super::inmemoryhashservice::InMemoryHashService;
 use super::mongohashservice::MongoHashService;
+use super::redishashservice::RedisHashService;
 
 pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashservice::HashService>, HashServiceError> {
     let mut hash_service: Box<dyn hashservice::HashService> = match &settings.mode {
@@ -14,7 +15,7 @@ pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashserv
         },
         Mode::Mongo => {
             match &settings.database {
-                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Persistent"), configuraiton: String::from("Database") }),
+                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Mongo"), configuraiton: String::from("Database") }),
                 Some(database_config) => {
                     Box::new(MongoHashService::new(database_config))
                 }
@@ -28,6 +29,14 @@ pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashserv
                 }
             }
         },
+        Mode::Redis => {
+            match &settings.database {
+                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Redis"), configuraiton: String::from("Database") }),
+                Some(database_config) => {
+                    Box::new(RedisHashService::new(database_config))
+                }
+            }
+        }
     };
 
     hash_service.init().await?;
