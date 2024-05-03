@@ -5,18 +5,18 @@ use super::coordinatorhashservice::CoordinatorHashService;
 use super::hashservice::{self};
 use super::hashserviceerror::HashServiceError;
 use super::inmemoryhashservice::InMemoryHashService;
-use super::persistenthashservice::PersistentHashService;
+use super::mongohashservice::MongoHashService;
 
 pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashservice::HashService>, HashServiceError> {
     let mut hash_service: Box<dyn hashservice::HashService> = match &settings.mode {
         Mode::InMemory => {
             Box::new(InMemoryHashService::new())
         },
-        Mode::Persistent => {
+        Mode::Mongo => {
             match &settings.database {
                 None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Persistent"), configuraiton: String::from("Database") }),
                 Some(database_config) => {
-                    Box::new(PersistentHashService::new(database_config))
+                    Box::new(MongoHashService::new(database_config))
                 }
             }
         },

@@ -6,14 +6,14 @@ use async_trait::async_trait;
 
 use super::hashserviceerror::HashServiceError;
 
-pub struct PersistentHashService {
+pub struct MongoHashService {
     database_config: configuration::settings::Database,
     collection: Option<Collection<LinkInfo>>
 }
 
-impl PersistentHashService {
+impl MongoHashService {
     pub fn new(config: &configuration::settings::Database) -> impl hashservice::HashService {
-        PersistentHashService {
+        MongoHashService {
             database_config: config.clone(),
             collection: None
         }
@@ -21,7 +21,7 @@ impl PersistentHashService {
 }
 
 #[async_trait]
-impl hashservice::HashService for PersistentHashService {
+impl hashservice::HashService for MongoHashService {
     async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
         let hash_value = hashfunction::hash(value);
 

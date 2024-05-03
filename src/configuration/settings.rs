@@ -9,7 +9,7 @@ use crate::constants::{DEFAULT_CAPACITY, DEFAULT_FILL_RATE};
 pub enum Mode {
     #[default]
     InMemory,
-    Persistent,
+    Mongo,
     Coordinator
 }
 
