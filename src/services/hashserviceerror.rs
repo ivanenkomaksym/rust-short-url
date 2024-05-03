@@ -6,6 +6,8 @@ use thiserror::Error;
 pub enum HashServiceError {
     #[error("service connection error")]
     ConnectionError(#[from] mongodb::error::Error),
+    #[error("service connection error")]
+    RedisConnectionError(#[from] redis::RedisError),
     #[error("Missing configuration '{configuraiton}' in '{mode}' mode.")]
     MissingConfiguration {
         mode: String,
