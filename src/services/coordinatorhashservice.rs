@@ -120,11 +120,10 @@ impl hashservice::HashService for CoordinatorHashService {
 }
 
 pub async fn test_connection(host: &String, port: usize) -> Result<(), HashServiceError> {
-    let resp = reqwest::get(format!("http://{}:{}/hello", host, port))
+    let _resp = reqwest::get(format!("http://{}:{}/hello", host, port))
         .await?
             .json::<HashMap<String, String>>()
             .await?;
-    println!("{:#?}", resp);
 
     Ok(())
 }
@@ -136,7 +135,6 @@ pub async fn get_links_impl(host: &str, port: usize, _query_info: Option<QueryPa
         .await?
             .json::<Vec<LinkInfo>>()
             .await?;
-    println!("{:#?}", urls);
     
     Ok(urls)
 }
@@ -149,8 +147,6 @@ pub async fn find_impl(host: &str, port: usize, key: &str) -> Result<Option<Link
             Ok(value) => value,
             Err(_) => return Ok(None)
         };
-    
-    println!("{:#?}", response);
 
     Ok(Some(response))
 }
@@ -160,7 +156,6 @@ pub async fn insert_impl(host: &str, port: usize, value: &str) -> Result<String,
         .await?
             .text()
             .await?;
-    println!("{:#?}", short_url);
 
     let key_value = short_url.split('/').map(|y| y).collect::<Vec<&str>>();
 

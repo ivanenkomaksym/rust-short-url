@@ -29,8 +29,6 @@ mod tests {
         let key1 = hashfunction::hash(str1);
         let key2 = hashfunction::hash(str2);
 
-        println!("{} {}", key1, key2);
-
         // Assert
         assert_ne!(key1, key2);
     }
