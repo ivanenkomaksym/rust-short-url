@@ -2,7 +2,6 @@ use crate::{services::hashservice, models::{linkinfo::LinkInfo, queryparams::Que
 
 use async_trait::async_trait;
 use redis::JsonCommands;
-use serde_json::json;
 
 use super::{hashfunction, hashserviceerror::HashServiceError};
 
@@ -37,14 +36,30 @@ impl hashservice::HashService for RedisHashService {
             long_url: String::from(value),
             clicks: 0
         };
-
-        self.connection.as_mut().unwrap().json_set(&hash_value, "$", &json!(new_link).to_string())?;
+        
+        self.connection.as_mut().unwrap().json_set(&hash_value, "$", &new_link)?;
 
         Ok(hash_value)
     }
 
-    async fn find(&mut self, _key: &str) -> Option<LinkInfo> {
-        return None
+    async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
+        let result = self.connection.as_mut().unwrap().json_get::<&str, &str, String>(key, "$")?;
+        
+        let found_links: Vec<LinkInfo> = match serde_json::from_str(result.as_str()) {
+            Ok(v) => v,
+            Err(err) => panic!("{}", err)
+        };
+
+        if found_links.is_empty() {
+            return Ok(None);
+        }
+
+        let mut found_link = found_links.first().unwrap().clone();
+        found_link.clicks += 1;
+
+        self.connection.as_mut().unwrap().json_set(key.to_string(), "$", &found_link)?;
+
+        return Ok(Some(found_link));
     }
 
     async fn get_links(&self, _query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {

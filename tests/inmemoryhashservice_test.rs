@@ -35,7 +35,7 @@ mod tests {
         assert!(key_result.is_ok());
         let key = key_result.unwrap();
 
-        let linkinfo_result = hash_service.find(&key).await;
+        let linkinfo_result = hash_service.find(&key).await.unwrap();
 
         // Assert
         assert_eq!(linkinfo_result.is_none(), false);
@@ -52,7 +52,7 @@ mod tests {
 
         // Act
         let key = "non_existing_key";
-        let linkinfo_result = hash_service.find(key).await;
+        let linkinfo_result = hash_service.find(key).await.unwrap();
 
         // Assert
         assert_eq!(linkinfo_result.is_none(), true);
@@ -74,7 +74,7 @@ mod tests {
         let mut linkinfo_result = None;
         let expected_clicks = 20;
         for _i in 0..expected_clicks {
-            linkinfo_result = hash_service.find(&key).await;
+            linkinfo_result = hash_service.find(&key).await.unwrap();
         }
 
         // Assert
