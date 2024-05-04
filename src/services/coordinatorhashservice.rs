@@ -99,7 +99,7 @@ impl hashservice::HashService for CoordinatorHashService {
         Ok(result)
     }
 
-    async fn find(&mut self, key: &str) -> Option<LinkInfo> {
+    async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
         let mut result: Option<LinkInfo> = None;
 
         for node in &self.nodes {
@@ -115,7 +115,7 @@ impl hashservice::HashService for CoordinatorHashService {
             }
         }
 
-        result
+        Ok(result)
     }
 }
 

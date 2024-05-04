@@ -107,11 +107,19 @@ async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) -
 
     let mut data = appdata.lock().unwrap();
     let long_url: String = match data.hash_service.find(&short_url).await {
-        None => {
-            return HttpResponse::NotFound()
-                .finish();
+        Ok(v) => {
+            match v {
+                None => {
+                    return HttpResponse::NotFound()
+                        .finish();
+                }
+                Some(value) => value.long_url.clone()
+            }
+        },
+        Err(err) => {
+            log::error!("{}", err);
+            return HttpResponse::InternalServerError().finish();
         }
-        Some(value) => value.long_url.clone()
     };
 
     HttpResponse::PermanentRedirect()
@@ -130,11 +138,18 @@ async fn summary(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) ->
 
     let mut data = appdata.lock().unwrap();
     let linkinfo = match data.hash_service.find(&short_url).await{
-        None => {
-            return HttpResponse::NotFound()
-                .finish();
+        Ok(v) => {
+            match v {
+                None => {
+                    return HttpResponse::NotFound().finish();
+                }
+                Some(value) => value.clone()
+            }
+        },
+        Err(err) => {
+            log::error!("{}", err);
+            return HttpResponse::InternalServerError().finish();
         }
-        Some(value) => value.clone()
     };
 
     HttpResponse::Ok()

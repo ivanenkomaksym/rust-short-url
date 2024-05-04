@@ -41,7 +41,7 @@ impl hashservice::HashService for InMemoryHashService {
         Ok(urls.into_iter().skip(skip).take(top).collect())
     }
 
-    async fn find(&mut self, key: &str) -> Option<LinkInfo> {
+    async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
         #[cfg(debug_assertions)]
         // Print the content of the HashMap
         for (key, value) in &self.urls {
@@ -49,10 +49,10 @@ impl hashservice::HashService for InMemoryHashService {
         }
 
         match self.urls.get_mut(key) {
-            None => return None,
+            None => return Ok(None),
             Some(value) => {
                 value.clicks += 1;
-                return Some(value.clone()) // Directly return the mutable reference to value
+                return Ok(Some(value.clone())) // Directly return the mutable reference to value
             }
         }
     }

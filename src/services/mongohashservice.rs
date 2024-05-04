@@ -25,7 +25,7 @@ impl hashservice::HashService for MongoHashService {
     async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
         let hash_value = hashfunction::hash(value);
 
-        let find_result = self.find(&hash_value).await;
+        let find_result = self.find(&hash_value).await?;
         if find_result.is_some() {
             return Ok(hash_value);
         }
@@ -40,26 +40,18 @@ impl hashservice::HashService for MongoHashService {
         Ok(hash_value)
     }
 
-    async fn find(&mut self, key: &str) -> Option<LinkInfo> {
+    async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
         let find_result = self.collection.as_mut().unwrap().find_one(
             doc! { "short_url": key }, None
-        ).await;
-
-        match find_result {
-            Ok(option_result) => {
-                let mut unwrapped_result = match option_result {
-                    Some(value) => value,
-                    None => return None,
-                };
-                
-                unwrapped_result.clicks += 1;
-                return Some(unwrapped_result)
-            },
-            Err(err) => {
-                log::warn!("{}", err);
-                return None
-            }
-        }
+        ).await?;
+        
+        let mut unwrapped_result = match find_result {
+            Some(value) => value,
+            None => return Ok(None),
+        };
+        
+        unwrapped_result.clicks += 1;
+        return Ok(Some(unwrapped_result))
     }
 
     async fn init(&mut self) -> Result<(), HashServiceError> {
