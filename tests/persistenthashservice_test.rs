@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use rust_short_url::{configuration::settings::{Settings, ApiServer, Database}, services::hashservicefactory::create_hash_service};
+    use rust_short_url::{configuration::settings::{Settings, ApiServer, MongoConfig}, services::hashservicefactory::create_hash_service};
 
     #[actix_rt::test]
     #[should_panic(expected = "connection string contains no scheme")]
@@ -14,7 +14,8 @@ mod tests {
         return Settings { 
             debug: true,
             apiserver: ApiServer { application_url: String::from("localhost"), hostname: String::from("localhost") },
-            database: Some(Database { connection_string: String::from("invalid_string"), database_name: Some(String::from("database")), collection_name: Some(String::from("collection")) }),
+            mongo_config: Some(MongoConfig { connection_string: String::from("invalid_string"), database_name: Some(String::from("database")), collection_name: Some(String::from("collection")) }),
+            redis_config: None,
             ratelimit: None,
             mode: rust_short_url::configuration::settings::Mode::Mongo,
             coordinator: None,

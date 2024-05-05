@@ -85,7 +85,8 @@ mod tests {
                 application_url: String::from("localhost"),
                 hostname: String::from("localhost")
             },
-            database: None,
+            mongo_config: None,
+            redis_config: None,
             ratelimit: Some(RateLimit {capacity: 2, fill_rate: 2}),
             mode: rust_short_url::configuration::settings::Mode::InMemory,
             coordinator: None

@@ -25,21 +25,4 @@ macro_rules! name_of {
             stringify!($name)
         }
     };
-
-    ($name:ident:: $variant:ident in $ty:ty) => {
-        {
-            #[allow(dead_code)]
-            fn dummy(v: $ty) {
-                let _ = &v.$name::$variant;
-            }
-            stringify!($variant)
-        }
-    };
-
-    ($name:ident:: $variant:ident) => {
-        {
-            let _ = &$name::$variant;
-            stringify!($variant)
-        }
-    };
 }

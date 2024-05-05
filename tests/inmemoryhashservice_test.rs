@@ -166,7 +166,8 @@ mod tests {
                 application_url: String::from("localhost"),
                 hostname: String::from("localhost")
             },
-            database: None,
+            mongo_config: None,
+            redis_config: None,
             ratelimit: None,
             mode: rust_short_url::configuration::settings::Mode::InMemory,
             coordinator: None

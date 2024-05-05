@@ -29,10 +29,16 @@ pub struct ApiServer {
 
 #[derive(Clone, Debug, Deserialize)]
 #[allow(unused)]
-pub struct Database {
+pub struct MongoConfig {
     pub connection_string: String,
-    pub database_name: Option<String>,
-    pub collection_name: Option<String>
+    pub database_name: String,
+    pub collection_name: String
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[allow(unused)]
+pub struct RedisConfig {
+    pub connection_string: String
 }
 
 #[derive(Clone, Copy, Debug, Deserialize)]
@@ -56,7 +62,8 @@ pub struct Settings {
     pub debug: bool,
     pub mode: Mode,
     pub apiserver: ApiServer,
-    pub database: Option<Database>,
+    pub mongo_config: Option<MongoConfig>,
+    pub redis_config: Option<RedisConfig>,
     pub ratelimit: Option<RateLimit>,
     pub coordinator: Option<Coordinator>
 }

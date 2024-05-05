@@ -6,14 +6,14 @@ use redis::{Commands, JsonCommands};
 use super::{hashfunction, hashserviceerror::HashServiceError};
 
 pub struct RedisHashService {
-    database_config: configuration::settings::Database,
+    redis_config: configuration::settings::RedisConfig,
     connection: Option<redis::Connection>,
 }
 
 impl RedisHashService {
-    pub fn new(config: &configuration::settings::Database) -> impl hashservice::HashService {
+    pub fn new(config: &configuration::settings::RedisConfig) -> impl hashservice::HashService {
         RedisHashService {
-            database_config: config.clone(),
+            redis_config: config.clone(),
             connection: None
         }
     }
@@ -22,7 +22,7 @@ impl RedisHashService {
 #[async_trait]
 impl hashservice::HashService for RedisHashService {
     async fn init(&mut self) -> Result<(), HashServiceError> {
-        let client = redis::Client::open(self.database_config.connection_string.clone()).unwrap();
+        let client = redis::Client::open(self.redis_config.connection_string.clone()).unwrap();
         self.connection = Some(client.get_connection().unwrap());
 
         Ok(())

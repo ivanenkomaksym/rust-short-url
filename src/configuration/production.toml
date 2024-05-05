@@ -1,11 +1,11 @@
 debug = false
-mode = "Persistent"
+mode = "Mongo"
 
 [apiserver]
 application_url = "0.0.0.0:80"
 hostname = "localhost"
 
-[database]
+[mongo_config]
 connection_string = "mongodb://short-url-mongo:27017/"
 database_name = "ShortURLDb"
 collection_name = "Urls"
