@@ -1,7 +1,7 @@
 use crate::{services::hashservice, models::{linkinfo::LinkInfo, queryparams::QueryParams}, configuration};
 
 use async_trait::async_trait;
-use redis::JsonCommands;
+use redis::{Commands, JsonCommands};
 
 use super::{hashfunction, hashserviceerror::HashServiceError};
 
@@ -62,7 +62,33 @@ impl hashservice::HashService for RedisHashService {
         return Ok(Some(found_link));
     }
 
-    async fn get_links(&self, _query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
-        todo!()
+    async fn get_links(&mut self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
+        // Get all keys
+        let keys: Vec<String> = self.connection.as_mut().unwrap().keys("*")?;
+
+        let mut links: Vec<LinkInfo> = vec![];
+        
+        // Iterate over keys and get their values
+        for key in keys {
+            let result = self.connection.as_mut().unwrap().json_get::<&str, &str, String>(key.as_str(), "$")?;
+            
+            let found_links: Vec<LinkInfo> = match serde_json::from_str(result.as_str()) {
+                Ok(v) => v,
+                Err(err) => panic!("{}", err)
+            };
+
+            links.push(found_links.first().unwrap().clone());
+        }
+
+        // Filter
+        let query_params = match query_params {
+            Some(value) => value,
+            None => return Ok(links)
+        };
+
+        let top = query_params.top.unwrap_or(links.len());
+        let skip = query_params.skip.unwrap_or(0);
+        
+        Ok(links.into_iter().skip(skip).take(top).collect())
     }
 }
