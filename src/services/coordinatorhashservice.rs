@@ -67,7 +67,7 @@ impl hashservice::HashService for CoordinatorHashService {
         Ok(())
     }
 
-    async fn get_links(&self, query_info: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
+    async fn get_links(&mut self, query_info: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
         let mut result: Vec<LinkInfo> = Vec::<LinkInfo>::new();
 
         for node in &self.nodes {

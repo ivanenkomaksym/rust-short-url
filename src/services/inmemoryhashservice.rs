@@ -27,7 +27,7 @@ impl hashservice::HashService for InMemoryHashService {
         return Ok(hash_value)
     }
 
-    async fn get_links(&self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError>
+    async fn get_links(&mut self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError>
     {
         let urls = self.urls.iter().map(|key_value| key_value.1.clone()).collect();
         let query_params = match query_params {

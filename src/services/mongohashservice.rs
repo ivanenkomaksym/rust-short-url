@@ -70,7 +70,7 @@ impl hashservice::HashService for MongoHashService {
         Ok(())
     }
 
-    async fn get_links(&self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError>
+    async fn get_links(&mut self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError>
     {
         let coll = match &self.collection {
             Some(value) => value,
