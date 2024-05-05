@@ -8,10 +8,10 @@ pub enum HashServiceError {
     ConnectionError(#[from] mongodb::error::Error),
     #[error("service connection error")]
     RedisConnectionError(#[from] redis::RedisError),
-    #[error("Missing configuration '{configuraiton}' in '{mode}' mode.")]
+    #[error("Missing configuration '{configuration}' in '{mode}' mode.")]
     MissingConfiguration {
         mode: String,
-        configuraiton: String,
+        configuration: String,
     },
     #[error("Internal error")]
     IOError(#[from] io::Error),
@@ -19,4 +19,8 @@ pub enum HashServiceError {
     InternalHttpClientError(#[from] reqwest::Error),
     #[error("unknown data store error")]
     Unknown,
+}
+
+pub fn build_configuration_error(mode: &str, configuration: &str) -> HashServiceError {
+    HashServiceError::MissingConfiguration{ mode: mode.to_string(), configuration: configuration.to_string() }
 }

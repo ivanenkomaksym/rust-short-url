@@ -31,8 +31,8 @@ pub struct ApiServer {
 #[allow(unused)]
 pub struct Database {
     pub connection_string: String,
-    pub database_name: String,
-    pub collection_name: String
+    pub database_name: Option<String>,
+    pub collection_name: Option<String>
 }
 
 #[derive(Clone, Copy, Debug, Deserialize)]

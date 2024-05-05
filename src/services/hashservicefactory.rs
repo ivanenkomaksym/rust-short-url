@@ -15,7 +15,7 @@ pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashserv
         },
         Mode::Mongo => {
             match &settings.database {
-                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Mongo"), configuraiton: String::from("Database") }),
+                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Mongo"), configuration: String::from("Database") }),
                 Some(database_config) => {
                     Box::new(MongoHashService::new(database_config))
                 }
@@ -23,7 +23,7 @@ pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashserv
         },
         Mode::Coordinator => {
             match &settings.coordinator {
-                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Coordinator"), configuraiton: String::from("Coordinator") }),
+                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Coordinator"), configuration: String::from("Coordinator") }),
                 Some(coordinator_config) => {
                     Box::new(CoordinatorHashService::new(coordinator_config))
                 }
@@ -31,7 +31,7 @@ pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashserv
         },
         Mode::Redis => {
             match &settings.database {
-                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Redis"), configuraiton: String::from("Database") }),
+                None => return Err(HashServiceError::MissingConfiguration{ mode: String::from("Redis"), configuration: String::from("Database") }),
                 Some(database_config) => {
                     Box::new(RedisHashService::new(database_config))
                 }

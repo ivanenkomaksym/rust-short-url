@@ -1,4 +1,4 @@
-use crate::{services::hashservice, services::hashfunction, models::{linkinfo::LinkInfo, queryparams::QueryParams}, configuration};
+use crate::{configuration::{self, settings::{Database, Mode}}, models::{linkinfo::LinkInfo, queryparams::QueryParams}, name_of, services::{hashfunction, hashservice, hashserviceerror::build_configuration_error}};
 use futures_util::TryStreamExt;
 use mongodb::{ bson::doc, options::{ ClientOptions, ServerApi, ServerApiVersion }, Client, Collection };
 
@@ -55,6 +55,9 @@ impl hashservice::HashService for MongoHashService {
     }
 
     async fn init(&mut self) -> Result<(), HashServiceError> {
+        let database_name = self.database_config.database_name.as_ref().ok_or(build_configuration_error(Mode::Mongo.to_string().as_str(), name_of!(database_name in Database)))?;
+        let collection_name = self.database_config.collection_name.as_ref().ok_or(build_configuration_error(Mode::Mongo.to_string().as_str(), name_of!(collection_name in Database)))?;
+
         let mut client_options = ClientOptions::parse(&self.database_config.connection_string).await?;
         // Set the server_api field of the client_options object to Stable API version 1
         let server_api = ServerApi::builder().version(ServerApiVersion::V1).build();
@@ -65,7 +68,7 @@ impl hashservice::HashService for MongoHashService {
         client.database("admin").run_command(doc! { "ping": 1 }, None).await?;
         log::debug!("Pinged your deployment. You successfully connected to MongoDB!");
 
-        self.collection = Some(client.database(&self.database_config.database_name).collection::<LinkInfo>(&self.database_config.collection_name));
+        self.collection = Some(client.database(database_name.as_str()).collection::<LinkInfo>(collection_name.as_str()));
 
         Ok(())
     }
