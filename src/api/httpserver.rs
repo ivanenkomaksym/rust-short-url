@@ -51,6 +51,7 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
                 }).route(web::get().to(shorten)))
             .service(redirect)
             .service(summary)
+            .service(delete)
             .app_data(web::Data::clone(&appdata))
     })
     .bind(application_url)?
@@ -155,4 +156,30 @@ async fn summary(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) ->
     HttpResponse::Ok()
         .content_type(APPLICATION_JSON)
         .json(linkinfo)
+}
+
+#[delete("/{short_url}")]
+async fn delete(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
+    let short_url = path.into_inner();
+    if short_url.is_empty() {
+        return HttpResponse::BadRequest()
+            .finish();
+    }
+
+    let mut data = appdata.lock().unwrap();
+    let result: bool = match data.hash_service.delete(&short_url).await {
+        Ok(v) => v,
+        Err(err) => {
+            log::error!("{}", err);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    if result {
+        return HttpResponse::NoContent()
+            .finish();
+    } else {
+        return HttpResponse::NotFound()
+            .finish();
+    }
 }

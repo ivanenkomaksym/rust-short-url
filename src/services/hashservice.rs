@@ -13,4 +13,6 @@ pub trait HashService: Send + Sync {
     async fn insert(&mut self, value: &str) -> Result<String, HashServiceError>;
 
     async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError>;
+
+    async fn delete(&mut self, key: &str) -> Result<bool, HashServiceError>;
 }

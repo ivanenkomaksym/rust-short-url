@@ -117,6 +117,10 @@ impl hashservice::HashService for CoordinatorHashService {
 
         Ok(result)
     }
+
+    async fn delete(&mut self, _: &str) -> Result<bool, HashServiceError> {
+        todo!()
+    }
 }
 
 pub async fn test_connection(host: &String, port: usize) -> Result<(), HashServiceError> {

@@ -54,6 +54,14 @@ impl hashservice::HashService for MongoHashService {
         return Ok(Some(unwrapped_result))
     }
 
+    async fn delete(&mut self, key: &str) -> Result<bool, HashServiceError> {
+        let delete_result = self.collection.as_mut().unwrap().delete_one(
+            doc! { "short_url": key }, None
+        ).await?;
+
+        return Ok(delete_result.deleted_count > 0)
+    }
+
     async fn init(&mut self) -> Result<(), HashServiceError> {
         let mut client_options = ClientOptions::parse(&self.mongo_config.connection_string).await?;
         // Set the server_api field of the client_options object to Stable API version 1

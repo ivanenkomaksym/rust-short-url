@@ -57,6 +57,10 @@ impl hashservice::HashService for InMemoryHashService {
         }
     }
 
+    async fn delete(&mut self, key: &str) -> Result<bool, HashServiceError> {
+        Ok(self.urls.remove(key).is_some())
+    }
+
     async fn init(&mut self) -> Result<(), HashServiceError> {
         Ok(())
     }

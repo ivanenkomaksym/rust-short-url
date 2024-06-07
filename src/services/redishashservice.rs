@@ -62,6 +62,12 @@ impl hashservice::HashService for RedisHashService {
         return Ok(Some(found_link));
     }
 
+    async fn delete(&mut self, key: &str) -> Result<bool, HashServiceError> {
+        let result = self.connection.as_mut().unwrap().del(key)?;
+
+        Ok(result)
+    }
+
     async fn get_links(&mut self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError> {
         // Get all keys
         let keys: Vec<String> = self.connection.as_mut().unwrap().keys("*")?;
