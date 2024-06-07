@@ -20,11 +20,18 @@ impl InMemoryHashService {
 
 #[async_trait]
 impl hashservice::HashService for InMemoryHashService {
-    async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
+    async fn insert(&mut self, value: &str) -> Result<LinkInfo, HashServiceError> {
         let hash_value = hashfunction::hash(value);
-        self.urls.entry(hash_value.clone()).or_insert(LinkInfo { long_url:value.to_string(),clicks:0, short_url: hash_value.clone() });
 
-        return Ok(hash_value)
+        let new_link = LinkInfo {
+            long_url: value.to_string(),
+            short_url: hash_value.clone(),
+            clicks: 0
+        };
+
+        self.urls.entry(hash_value.clone()).or_insert(new_link.clone());
+
+        return Ok(new_link)
     }
 
     async fn get_links(&mut self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError>

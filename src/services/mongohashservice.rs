@@ -22,12 +22,12 @@ impl MongoHashService {
 
 #[async_trait]
 impl hashservice::HashService for MongoHashService {
-    async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
+    async fn insert(&mut self, value: &str) -> Result<LinkInfo, HashServiceError> {
         let hash_value = hashfunction::hash(value);
 
         let find_result = self.find(&hash_value).await?;
         if find_result.is_some() {
-            return Ok(hash_value);
+            return Ok(find_result.unwrap());
         }
         
         let new_link = LinkInfo{
@@ -36,8 +36,8 @@ impl hashservice::HashService for MongoHashService {
             clicks: 0
         };
 
-        self.collection.as_mut().unwrap().insert_one(new_link, None).await?;
-        Ok(hash_value)
+        self.collection.as_mut().unwrap().insert_one(new_link.clone(), None).await?;
+        Ok(new_link)
     }
 
     async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {

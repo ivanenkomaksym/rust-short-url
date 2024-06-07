@@ -83,20 +83,23 @@ impl hashservice::HashService for CoordinatorHashService {
         Ok(result)
     }
 
-    async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
-        let mut result: String = String::from("");
+    async fn insert(&mut self, value: &str) -> Result<LinkInfo, HashServiceError> {
+        let mut result: Option<LinkInfo> = None;
 
         for node in &self.nodes {
-            let node_result = insert_impl(&node.host, node.port.into(), value).await?;
+            let node_result = match insert_impl(&node.host, node.port.into(), value).await {
+                Ok(value) => value,
+                Err(e) => panic!("{}", e)
+            };
             
-            if result.len() > 0 {
+            if result.is_some() {
                 // TODO: Error handling in case values are different, so there is an inconsistency between replicas
             } else {
-                result = node_result;
+                result = Some(node_result);
             }
         }
 
-        Ok(result)
+        Ok(result.unwrap())
     }
 
     async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
@@ -155,13 +158,14 @@ pub async fn find_impl(host: &str, port: usize, key: &str) -> Result<Option<Link
     Ok(Some(response))
 }
 
-pub async fn insert_impl(host: &str, port: usize, value: &str) -> Result<String, HashServiceError> {
-    let short_url = reqwest::get(format!("http://{}:{}/shorten?long_url={}", host, port, value))
+pub async fn insert_impl(host: &str, port: usize, value: &str) -> Result<LinkInfo, HashServiceError> {
+    let response = match reqwest::get(format!("http://{}:{}/shorten?long_url={}", host, port, value))
         .await?
-            .text()
-            .await?;
+            .json::<LinkInfo>()
+            .await {
+                Ok(value) => value,
+                Err(err) => panic!("{}", err)
+            };
 
-    let key_value = short_url.split('/').map(|y| y).collect::<Vec<&str>>();
-
-    Ok(key_value[1].to_string())
+    Ok(response)
 }

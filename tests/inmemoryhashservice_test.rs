@@ -31,11 +31,11 @@ mod tests {
         let expected_long_url = "https://doc.rust-lang.org/";
 
         // Act
-        let key_result = hash_service.insert(expected_long_url).await;
-        assert!(key_result.is_ok());
-        let key = key_result.unwrap();
+        let inserted_result = hash_service.insert(expected_long_url).await;
+        assert!(inserted_result.is_ok());
+        let inserted = inserted_result.unwrap();
 
-        let linkinfo_result = hash_service.find(&key).await.unwrap();
+        let linkinfo_result = hash_service.find(&inserted.short_url).await.unwrap();
 
         // Assert
         assert_eq!(linkinfo_result.is_none(), false);
@@ -67,21 +67,21 @@ mod tests {
         let expected_long_url = "https://doc.rust-lang.org/";
 
         // Act
-        let key_result = hash_service.insert(expected_long_url).await;
-        assert!(key_result.is_ok());
-        let key = key_result.unwrap();
+        let inserted_result = hash_service.insert(expected_long_url).await;
+        assert!(inserted_result.is_ok());
+        let inserted = inserted_result.unwrap();
 
         let mut linkinfo_result = None;
         let expected_clicks = 20;
         for _i in 0..expected_clicks {
-            linkinfo_result = hash_service.find(&key).await.unwrap();
+            linkinfo_result = hash_service.find(&inserted.short_url).await.unwrap();
         }
 
         // Assert
         assert_eq!(linkinfo_result.is_none(), false);
         let actual_linkinfo = &linkinfo_result.unwrap();
         
-        assert_eq!(actual_linkinfo.short_url, key);
+        assert_eq!(actual_linkinfo.short_url, inserted.short_url);
         assert_eq!(actual_linkinfo.long_url, expected_long_url);
         assert_eq!(actual_linkinfo.clicks, expected_clicks);
     }

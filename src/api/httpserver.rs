@@ -92,8 +92,8 @@ pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<
         }
         Ok(value) => {
             HttpResponse::Ok()
-                .content_type(TEXT_HTML)
-                .body(format!("{}/{}", data.settings.apiserver.hostname, value))
+                .content_type(APPLICATION_JSON)
+                .json(value)
         }
     }
 }

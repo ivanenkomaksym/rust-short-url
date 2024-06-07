@@ -28,7 +28,7 @@ impl hashservice::HashService for RedisHashService {
         Ok(())
     }
 
-    async fn insert(&mut self, value: &str) -> Result<String, HashServiceError> {
+    async fn insert(&mut self, value: &str) -> Result<LinkInfo, HashServiceError> {
         let hash_value = hashfunction::hash(value);
 
         let new_link = LinkInfo{
@@ -39,7 +39,7 @@ impl hashservice::HashService for RedisHashService {
         
         self.connection.as_mut().unwrap().json_set(&hash_value, "$", &new_link)?;
 
-        Ok(hash_value)
+        Ok(new_link)
     }
 
     async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
