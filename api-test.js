@@ -21,37 +21,37 @@ const randomLinks = [
 ];
 
 export async function setup() {
-  const shortenedLinks = [];
+  const linkInfos = [];
 
   for (let i = 0; i < randomLinks.length; i++) {
     const randomLink = randomLinks[i];
     const response = http.get(`http://localhost/shorten?long_url=${encodeURIComponent(randomLink)}`);
     if (response.status == 200) {
-      const shortenedLink = response.body;
-      shortenedLinks.push(shortenedLink);
+      const linkInfo = response.json();
+      linkInfos.push(linkInfo);
     } else {
       console.error(`Failed to shorten link: ${randomLink}`, response.error);
     }
   }
 
-  return { shortenedLinks: shortenedLinks };
+  return { linkInfos: linkInfos };
 }
 
-export default function () {
-  const response = http.get('http://localhost/urls');
-
-  check(response, { 'response code was 200': (res) => res.status == 200 });
-
-  sleep(1);
+export default function (data) {
+  for (let i = 0; i < data.linkInfos.length; i++) {
+    const linkInfo = data.linkInfos[i];
+    const response = http.get(`http://localhost/${linkInfo.short_url}/summary`);
+    
+    check(response, { 'response code was 200': (res) => res.status == 200 });
+  }
 }
 
 export async function teardown(data) {
-  for (let i = 0; i < data.shortenedLinks.length; i++) {
-    const shortenedLink = data.shortenedLinks[i];
-    console.log(`shortenedLink: ${shortenedLink}`);
-    const response = http.del(`http://${shortenedLink}`);
+  for (let i = 0; i < data.linkInfos.length; i++) {
+    const linkInfo = data.linkInfos[i];
+    const response = http.del(`http://localhost/${linkInfo.short_url}`);
     if (response.status != 204) {
-      console.error(`Failed to remove link: ${shortenedLink}`, response.code);
+      console.error(`Failed to remove link: ${linkInfo.short_url}`, response.code);
     }
   }
 }
