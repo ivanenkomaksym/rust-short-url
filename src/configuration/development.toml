@@ -1,5 +1,5 @@
 debug = true
-mode = "Redis"
+mode = "InMemory"
 
 [apiserver]
 application_url = "localhost:80"
