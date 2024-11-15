@@ -17,6 +17,8 @@ Options:
 ```
 # Documentation
 
+![Alt text](docs/e2e_test.png?raw=true "e2e test")
+
 ## Settings
 Application settings can be configured in `development.toml` or `production.toml` files. Possible configurations include mode of the application, API server configuration, database connection, rate limiting and coordinator options.
 ![Alt text](docs/settings.png?raw=true "Application settings")
