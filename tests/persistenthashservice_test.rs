@@ -16,6 +16,7 @@ mod tests {
             apiserver: ApiServer { application_url: String::from("localhost"), hostname: String::from("localhost") },
             mongo_config: Some(MongoConfig { connection_string: String::from("invalid_string"), database_name: String::from("database"), collection_name: String::from("collection") }),
             redis_config: None,
+            firestore_config: None,
             ratelimit: None,
             mode: rust_short_url::configuration::settings::Mode::Mongo,
             coordinator: None,

@@ -11,7 +11,8 @@ pub enum Mode {
     InMemory,
     Mongo,
     Coordinator,
-    Redis
+    Redis,
+    Firestore
 }
 
 impl fmt::Display for Mode {
@@ -41,6 +42,12 @@ pub struct RedisConfig {
     pub connection_string: String
 }
 
+#[derive(Clone, Debug, Deserialize)]
+#[allow(unused)]
+pub struct FirestoreConfig {
+    pub project_id: String
+}
+
 #[derive(Clone, Copy, Debug, Deserialize)]
 #[allow(unused)]
 pub struct RateLimit {
@@ -64,6 +71,7 @@ pub struct Settings {
     pub apiserver: ApiServer,
     pub mongo_config: Option<MongoConfig>,
     pub redis_config: Option<RedisConfig>,
+    pub firestore_config: Option<FirestoreConfig>,
     pub ratelimit: Option<RateLimit>,
     pub coordinator: Option<Coordinator>
 }

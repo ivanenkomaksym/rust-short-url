@@ -8,6 +8,8 @@ pub enum HashServiceError {
     ConnectionError(#[from] mongodb::error::Error),
     #[error("service connection error")]
     RedisConnectionError(#[from] redis::RedisError),
+    #[error("service connection error")]
+    FirestoreConnectionError(#[from] firestore::errors::FirestoreError),
     #[error("Missing configuration '{configuration}' in '{mode}' mode.")]
     MissingConfiguration {
         mode: String,

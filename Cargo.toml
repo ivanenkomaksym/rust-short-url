@@ -13,6 +13,7 @@ clap = { version = "4.4.11", features = ["derive"] }
 config = "0.13.4"
 derive_more = "0.99.17"
 env_logger = "0.10.1"
+firestore = "0.44.0"
 futures-util = "0.3.29"
 hash_ring = "0.2.0"
 log = "0.4.20"

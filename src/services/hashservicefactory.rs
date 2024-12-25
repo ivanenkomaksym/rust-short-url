@@ -3,6 +3,7 @@ use crate::configuration::settings::Mode;
 use crate::name_of;
 
 use super::coordinatorhashservice::CoordinatorHashService;
+use super::firestorehashservice::FirestoreHashService;
 use super::hashservice::{self};
 use super::hashserviceerror::build_configuration_error;
 use super::hashserviceerror::HashServiceError;
@@ -36,6 +37,14 @@ pub async fn create_hash_service(settings: &Settings) -> Result<Box<dyn hashserv
                 None => return Err(build_configuration_error(Mode::Redis.to_string().as_str(), name_of!(redis_config in Settings))),
                 Some(redis_config) => {
                     Box::new(RedisHashService::new(redis_config))
+                }
+            }
+        },
+        Mode::Firestore => {
+            match &settings.firestore_config {
+                None => return Err(build_configuration_error(Mode::Firestore.to_string().as_str(), name_of!(firestore_config in Settings))),
+                Some(firestore_config) => {
+                    Box::new(FirestoreHashService::new(firestore_config))
                 }
             }
         }

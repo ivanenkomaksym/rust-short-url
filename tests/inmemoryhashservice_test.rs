@@ -168,6 +168,7 @@ mod tests {
             },
             mongo_config: None,
             redis_config: None,
+            firestore_config: None,
             ratelimit: None,
             mode: rust_short_url::configuration::settings::Mode::InMemory,
             coordinator: None

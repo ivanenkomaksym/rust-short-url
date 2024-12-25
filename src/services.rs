@@ -5,4 +5,5 @@ mod mongohashservice;
 mod redishashservice;
 mod coordinatorhashservice;
 mod hashserviceerror;
+mod firestorehashservice;
 pub mod hashfunction;
