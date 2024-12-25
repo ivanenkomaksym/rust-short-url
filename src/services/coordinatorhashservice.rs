@@ -11,8 +11,7 @@ use super::hashserviceerror::HashServiceError;
 #[derive(Clone, Debug)]
 pub struct Node {
     pub host: String,
-    pub port: u16,
-    pub hostname: String
+    pub port: u16
 }
 
 impl fmt::Display for Node {
@@ -56,8 +55,7 @@ impl hashservice::HashService for CoordinatorHashService {
 
             nodes.push(Node {
                 host: host.clone(),
-                port: port as u16,
-                hostname: format!("{}:{}", &host, port)
+                port: port as u16
             });
         }
 
