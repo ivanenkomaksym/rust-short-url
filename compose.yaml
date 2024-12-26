@@ -9,12 +9,17 @@
 # https://github.com/docker/awesome-compose
 services:
   rust-short-url-server:
+    pull_policy: always
     build:
       context: .
       target: final
     container_name: short-url-server
+    volumes:
+      # Map the JSON file from your local system to the container
+      - ./secrets/service-account.json:/secrets/service-account.json:r
     environment:
       - RUN_MODE=production
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/service-account.json
     ports:
       - 80:80
 
