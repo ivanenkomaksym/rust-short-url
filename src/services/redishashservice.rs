@@ -37,7 +37,7 @@ impl hashservice::HashService for RedisHashService {
             clicks: 0
         };
         
-        self.connection.as_mut().unwrap().json_set(&hash_value, "$", &new_link)?;
+        self.connection.as_mut().unwrap().json_set::<_, _, _, LinkInfo>(&hash_value, "$", &new_link)?;
 
         Ok(new_link)
     }
@@ -57,7 +57,7 @@ impl hashservice::HashService for RedisHashService {
         let mut found_link = found_links.first().unwrap().clone();
         found_link.clicks += 1;
 
-        self.connection.as_mut().unwrap().json_set(key.to_string(), "$", &found_link)?;
+        self.connection.as_mut().unwrap().json_set::<_, _, _, LinkInfo>(key.to_string(), "$", &found_link)?;
 
         return Ok(Some(found_link));
     }
