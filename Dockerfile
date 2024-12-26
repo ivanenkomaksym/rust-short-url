@@ -13,6 +13,9 @@ FROM rust:${RUST_VERSION}-slim-bullseye AS build
 ARG APP_NAME
 WORKDIR /app
 
+# Install dependencies, including libssl-dev for OpenSSL
+RUN apt-get update && apt-get install -y libssl-dev pkg-config ca-certificates
+
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
 # for downloaded dependencies and a cache mount to /app/target/ for 
@@ -45,6 +48,9 @@ EOF
 # (e.g., debian@sha256:ac707220fbd7b67fc19b112cee8170b41a9e97f703f588b2cdbbcdcecdd8af57).
 FROM debian:bullseye-slim AS final
 
+# Install CA certificates for HTTPS connections
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
 ARG UID=10001
@@ -66,6 +72,9 @@ COPY /src/configuration /src/configuration
 
 # Expose the port that the application listens on.
 EXPOSE 80
+
+# Set environment variables to point to CA certificates
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
 # What the container should run when it is started.
 CMD ["/bin/server"]
