@@ -93,6 +93,64 @@ Instance 3 started on port 63977
 Coordinator started on port 80
 ```
 
+# Firestore Integration
+
+This application supports integration with Google Firestore when the configuration parameter `Mode=Firestore` is set. To enable Firestore access, you need to set up application credentials with Google Cloud Platform (GCP). Follow these steps to configure and run the application:
+
+---
+
+## Steps to Configure Firestore Access
+
+1. **Create a Service Account in GCP**
+   - Navigate to the [Google Cloud Console](https://console.cloud.google.com).
+   - Go to **IAM & Admin > Service Accounts**.
+   - Click **Create Service Account**, provide a name and description, and proceed.
+   - Grant the service account the necessary permissions for Firestore (e.g., **Cloud Datastore User** role).
+   - Complete the creation process.
+
+2. **Generate and Download a JSON Key**
+   - In the Service Accounts list, locate your newly created service account.
+   - Click on the service account, go to the **Keys** tab, and select **Add Key > Create New Key**.
+   - Choose **JSON** format, then download and securely store the file (e.g., `urlshortener-445813-7cb90fbf70f8.json`).
+  
+3. **Save the Key File Locally**
+   - Save the downloaded key file as `service-account.json` in a secure directory, e.g., `secrets`.  
+   - Add `secrets/service-account.json` to your `.gitignore` to prevent it from being included in version control.  
+
+4. **Map the JSON File in Docker Compose**
+   - Modify your `compose.yml` to include the following configuration:  
+
+```yaml
+volumes:
+# Map the JSON file from your local system to the container
+- ./secrets/service-account.json:/secrets/service-account.json:ro
+environment:
+- RUN_MODE=production
+- GOOGLE_APPLICATION_CREDENTIALS=/secrets/service-account.json
+```
+
+5. **Set the Application Credentials**
+   - In your terminal, set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of your JSON key file:
+     ```powershell
+     $env:GOOGLE_APPLICATION_CREDENTIALS="D:\Downloads\urlshortener-445813-7cb90fbf70f8.json"
+     ```
+     For other shells (e.g., bash):
+     ```bash
+     export GOOGLE_APPLICATION_CREDENTIALS="/path/to/urlshortener-445813-7cb90fbf70f8.json"
+     ```
+
+6. **Test locally**
+   - Run the application using Cargo:
+     ```bash
+     cargo run
+     ```
+
+7. **Deploy the application**
+        ```bash
+        docker-compose -f compose.yaml up -d --build
+        ```
+---
+
 # Usage
 
 Execute a POST request to shorten a URL. Example:
