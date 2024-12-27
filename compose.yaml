@@ -23,7 +23,7 @@ services:
       - "GOOGLE_SERVICE_ACCOUNT_KEY=/secrets/service-account.json"
       - "GOOGLE_APPLICATION_CREDENTIALS=/secrets/service-account.json"
     ports:
-      - 80:80
+      - 8080:8080
 
   short-url-mongo:
     image: mongo

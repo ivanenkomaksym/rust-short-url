@@ -1,11 +1,9 @@
 debug = false
-mode = "Mongo"
+mode = "Firestore"
 
 [apiserver]
-application_url = "0.0.0.0:80"
+application_url = "0.0.0.0:8080"
 hostname = "localhost"
 
-[mongo_config]
-connection_string = "mongodb://short-url-mongo:27017/"
-database_name = "ShortURLDb"
-collection_name = "Urls"
+[firestore_config]
+project_id = "[project_id]"
