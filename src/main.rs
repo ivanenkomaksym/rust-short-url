@@ -1,4 +1,4 @@
-use rust_short_url::{configuration, services, api};
+use rust_short_url::{api, configuration::{self, settings::read_settings}, services};
 
 use std::{env,io};
 use configuration::settings::Settings;
@@ -9,7 +9,7 @@ async fn main() -> io::Result<()> {
     env::set_var("RUST_LOG", "actix_web = debug, actix_server =info");
     env_logger::init();
     
-    let settings_result: Result<Settings, config::ConfigError> = Settings::new();
+    let settings_result: Result<Settings, config::ConfigError> = read_settings();
 
     let settings = match settings_result  {
         Err(e) => panic!("Problem loading settings: {:?}", e),

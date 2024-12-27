@@ -138,3 +138,21 @@ impl Settings {
         config.try_deserialize()
     }
 }
+
+pub fn read_settings() -> Result<Settings, ConfigError> {
+    let mut settings = Settings::new()?;
+
+    match env::var("PROJECT_ID") {
+        Ok(project_id) => {
+            match settings.firestore_config {
+                Some(ref mut config) => {
+                    config.project_id = project_id;
+                }
+                None => {}
+            }
+        }
+        Err(_) => {}
+    }
+
+    Ok(settings)
+}
