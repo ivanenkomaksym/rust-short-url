@@ -120,14 +120,14 @@ This application supports integration with Google Firestore when the configurati
 4. **Map the JSON File in Docker Compose**
    - Modify your `compose.yml` to include the following configuration:  
 
-```yaml
-volumes:
-# Map the JSON file from your local system to the container
-- ./secrets/service-account.json:/secrets/service-account.json:ro
-environment:
-- RUN_MODE=production
-- GOOGLE_APPLICATION_CREDENTIALS=/secrets/service-account.json
-```
+        ```yaml
+        volumes:
+        # Map the JSON file from your local system to the container
+        - ./secrets/service-account.json:/secrets/service-account.json:ro
+        environment:
+        - RUN_MODE=production
+        - GOOGLE_APPLICATION_CREDENTIALS=/secrets/service-account.json
+        ```
 
 5. **Set the Application Credentials**
    - In your terminal, set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of your JSON key file:

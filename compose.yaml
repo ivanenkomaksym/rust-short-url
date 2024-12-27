@@ -18,8 +18,10 @@ services:
       # Map the JSON file from your local system to the container
       - ./secrets/service-account.json:/secrets/service-account.json:r
     environment:
-      - RUN_MODE=production
-      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/service-account.json
+      - "RUN_MODE=production"
+      - "PROJECT_ID=${PROJECT_ID}"
+      - "GOOGLE_SERVICE_ACCOUNT_KEY=/secrets/service-account.json"
+      - "GOOGLE_APPLICATION_CREDENTIALS=/secrets/service-account.json"
     ports:
       - 80:80
 

@@ -7,9 +7,13 @@ on:
     branches: [ "master" ]
 
 env:
+  RUN_MODE: production
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
   CARGO_TERM_COLOR: always
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY}}
+  GOOGLE_APPLICATION_CREDENTIALS: /secrets/service-account.json
 
 jobs:
   build:
@@ -18,6 +22,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Create secrets directory
+      run: mkdir -p ./secrets
+
+    - name: Copy service account JSON
+      run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > ./secrets/service-account.json
     
     - name: Build
       run: cargo build --verbose
@@ -46,3 +56,25 @@ jobs:
         DOCKERFILE="Dockerfile"
         echo "Building Docker image with timestamp tag: ${IMAGE_TAG}"
         docker buildx build -t "${IMAGE_TAG}" --file "${DOCKERFILE}" . --push
+
+    # Authenticate with Google Cloud
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ env.GOOGLE_SERVICE_ACCOUNT_KEY }}
+
+    # Install Google Cloud SDK
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ env.PROJECT_ID }}
+
+    # Deploy to Cloud Run
+    - name: Deploy server to Cloud Run
+      run: |
+        gcloud run deploy rust-short-url \
+          --image ivanenkomak/rust-short-url:latest \
+          --platform managed \
+          --region europe-central2 \
+          --allow-unauthenticated \
+          --set-env-vars "RUN_MODE=${{ env.RUN_MODE }},PROJECT_ID=${{ env.PROJECT_ID }},GOOGLE_SERVICE_ACCOUNT_KEY=${{ env.GOOGLE_SERVICE_ACCOUNT_KEY }}"
