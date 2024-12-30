@@ -3,8 +3,9 @@ use crate::constants::{APPLICATION_JSON, TEXT_HTML};
 use crate::models::queryparams::QueryParams;
 use crate::services::hashservice::HashService;
 
+use actix_cors::Cors;
 use actix_web::dev::Service;
-use actix_web::{middleware, App, HttpResponse, web};
+use actix_web::{http, middleware, web, App, HttpResponse};
 use actix_web::HttpServer;
 use std::io;
 use std::sync::{Mutex, Arc};
@@ -37,7 +38,18 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
     HttpServer::new(move|| {
         let rate_limiter = rate_limiter.clone();
 
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:4200")
+            .allowed_origin_fn(|origin, _req_head| {
+                origin.as_bytes().ends_with(b".ivanenkomak.com")
+            })
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+            .allowed_header(http::header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             // enable logger - always register actix-web Logger middleware last
             .wrap(middleware::Logger::default())
             // register HTTP requests handlers
