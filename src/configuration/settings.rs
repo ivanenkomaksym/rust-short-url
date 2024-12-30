@@ -25,7 +25,8 @@ impl fmt::Display for Mode {
 #[allow(unused)]
 pub struct ApiServer {
     pub application_url: String,
-    pub hostname: String
+    pub hostname: String,
+    pub allow_origin: String
 }
 
 #[derive(Clone, Debug, Deserialize)]

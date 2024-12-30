@@ -31,6 +31,7 @@ pub struct AppData {
 
 pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashService>) -> io::Result<()> {
     let application_url = settings.apiserver.application_url.clone();
+    let allow_origin = settings.apiserver.allow_origin.clone();
     let rate_limiter = Arc::new(Mutex::new(RateLimiter::new(settings.ratelimit)));
 
     let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
@@ -39,7 +40,7 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
         let rate_limiter = rate_limiter.clone();
 
         let cors = Cors::default()
-            .allowed_origin("http://localhost:4200")
+            .allowed_origin(&allow_origin)
             .allowed_origin_fn(|origin, _req_head| {
                 origin.as_bytes().ends_with(b".ivanenkomak.com")
             })

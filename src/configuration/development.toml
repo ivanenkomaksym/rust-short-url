@@ -1,9 +1,10 @@
 debug = true
-mode = "InMemory"
+mode = "Firestore"
 
 [apiserver]
 application_url = "localhost:80"
 hostname = "localhost"
+allow_origin = "http://localhost:4200"
 
-[redis_config]
-connection_string = "redis://localhost:6379/"
+[firestore_config]
+project_id = "[project_id]"

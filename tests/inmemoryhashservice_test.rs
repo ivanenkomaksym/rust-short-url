@@ -164,7 +164,8 @@ mod tests {
             debug: true,
             apiserver: ApiServer {
                 application_url: String::from("localhost"),
-                hostname: String::from("localhost")
+                hostname: String::from("localhost"),
+                allow_origin: String::from("localhost")
             },
             mongo_config: None,
             redis_config: None,
