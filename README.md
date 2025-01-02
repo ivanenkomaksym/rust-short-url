@@ -162,5 +162,53 @@ The response will contain a short URL, e.g., `localhost/1C96D51A`.
 
 You can now use `localhost/1C96D51A` as the shortened URL.
 
+# Cloud Deployment Architecture
+
+This project demonstrates a cloud-based URL shortening service with an Angular frontend and Rust backend service deployed on Google Cloud Run. The architecture uses Cloudflare for frontend hosting, domains, routing and redirects. Below is an explanation of the deployment workflow and user interaction:
+
+## Workflow
+
+1. **User Interaction with Angular App**:
+   - When a user visits [`https://surl.ivanenkomak.com/`](https://surl.ivanenkomak.com/), they are served the Angular frontend hosted behind Cloudflare.
+   - The Angular app allows users to input a **Long URL** and click "Shorten" to generate a shortened URL.
+
+2. **Shortened URL Generation**:
+   - The Angular app generates and displays a **Short URL**, such as [`https://surl.ivanenkomak.com/9032D81A`](https://surl.ivanenkomak.com/9032D81A).
+   - This Short URL includes a unique identifier (`9032D81A`) that maps to the original Long URL.
+
+3. **Redirect via Cloudflare**:
+   - When a user visits a Short URL [`https://surl.ivanenkomak.com/`](https://surl.ivanenkomak.com/), Cloudflare applies routing rules to differentiate between requests:
+       - Requests to `/` are served the Angular app.
+       - Requests to `/*` (paths with at least one character) are forwarded to the backend service.
+
+4. **Backend Service on Google Cloud Run**:
+   - The backend service, deployed on Google Cloud Run, receives the request with the unique identifier (`9032D81A`).
+   - It resolves the identifier to the original Long URL and issues a redirect to the user.
+
+The following diagram illustrates the architecture and workflow:
+
+![Alt text](docs/deployment.png?raw=true "Cloud Deployment Workflow")
+
+## Cloudflare Routing Rules
+
+The following Cloudflare routing rules are used to handle traffic:
+
+- **Root Path (`/`)**:
+  - Requests to the root path serve the Angular app (`index.html`).
+- **Short URLs (`/*`)**:
+  - Requests to any path with a unique identifier are forwarded to the backend service hosted on Google Cloud Run.
+
+## Example
+
+1. **Long URL**:  
+   `https://github.com/ivanenkomaksym/rust-short-url/blob/master/README.md`
+
+2. **Short URL**:  
+   `https://surl.ivanenkomak.com/9032D81A`
+
+3. **Redirection**:
+   - When the user visits the Short URL (`https://surl.ivanenkomak.com/9032D81A`), Cloudflare forwards the request to the backend.
+   - The backend resolves the identifier (`9032D81A`) to the Long URL and redirects the user to `https://github.com/ivanenkomaksym/rust-short-url/blob/master/README.md`.
+
 # References
 Alex Xu, System Design Interview – An insider's guide, 2020
