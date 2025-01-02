@@ -6,8 +6,13 @@ use services::hashservicefactory;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
-    env::set_var("RUST_LOG", "actix_web = debug, actix_server =info");
+    env::set_var("RUST_LOG", "debug, actix_server =info");
     env_logger::init();
+
+    // Print all environment variables.
+    for (key, value) in std::env::vars() {
+        println!("{key}: {value}");
+    }
     
     let settings_result: Result<Settings, config::ConfigError> = read_settings();
 
