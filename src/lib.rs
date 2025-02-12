@@ -3,6 +3,7 @@ pub mod configuration;
 pub mod constants;
 pub mod models;
 pub mod services;
+pub mod stats;
 
 #[macro_use]
 extern crate actix_web;
