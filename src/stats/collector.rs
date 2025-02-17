@@ -1,22 +1,24 @@
 use actix_web::http::header::HeaderMap;
 use user_agent_parser::UserAgentParser;
-use std::collections::HashMap;
 use reqwest::blocking::get;
 use serde_json::Value;
 
+use crate::models::analytic;
+
 pub(crate) async fn collect_stats(headers: &HeaderMap) {
-    let ip = extract_ip(&headers);
     let language = extract_language(&headers);
-    let device_info = extract_device_info(&headers);
+    let ip = extract_ip(&headers);
+    let os = extract_os(&headers);
     let location = ip.as_deref().map_or(None, extract_geolocation);
 
-    let mut stats = HashMap::new();
-    stats.insert("IP", ip.unwrap_or_else(|| "Unknown".to_string()));
-    stats.insert("Language", language.unwrap_or_else(|| "Unknown".to_string()));
-    stats.insert("Device Info", device_info.unwrap_or_else(|| "Unknown".to_string()));
-    stats.insert("Location", location.unwrap_or_else(|| "Unknown".to_string()));
+    let analytic = analytic::Analytic {
+        language,
+        ip,
+        os,
+        location
+    };
 
-    println!("{:?}", stats); // Store it in DB instead
+    println!("{:?}", analytic); // Store it in DB instead
 }
 
 fn extract_language(headers: &HeaderMap) -> Option<String> {
@@ -26,16 +28,11 @@ fn extract_language(headers: &HeaderMap) -> Option<String> {
         .map(|s| s.split(',').next().unwrap_or("").to_string())
 }
 
-fn extract_device_info(headers: &HeaderMap) -> Option<String> {
+fn extract_os(headers: &HeaderMap) -> Option<String> {
     if let Some(user_agent) = headers.get("User-Agent") {
         if let Ok(ua_str) = user_agent.to_str() {
             let ua_parser = UserAgentParser::from_path("regexes.yaml").unwrap();
-            return Some(format!(
-                "OS: {:#?}, Device: {:#?}, Product: {:#?}",
-                ua_parser.parse_os(ua_str).name,
-                ua_parser.parse_device(ua_str).name,
-                ua_parser.parse_product(ua_str).name
-            ));
+            return Some(ua_parser.parse_os(ua_str).name.unwrap().to_string());
         }
     }
     None
