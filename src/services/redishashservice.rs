@@ -42,6 +42,12 @@ impl hashservice::HashService for RedisHashService {
         Ok(new_link)
     }
 
+    async fn update(&mut self, key: &str, value: &LinkInfo) -> Result<bool, HashServiceError> {
+        self.connection.as_mut().unwrap().json_set::<_, _, _, LinkInfo>(key, "$", value)?;
+
+        Ok(true)
+    }
+
     async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
         let result = self.connection.as_mut().unwrap().json_get::<&str, &str, String>(key, "$")?;
         

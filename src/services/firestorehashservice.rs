@@ -72,6 +72,18 @@ impl hashservice::HashService for FirestoreHashService {
         Ok(new_link)
     }
 
+    async fn update(&mut self, key: &str, value: &LinkInfo) -> Result<bool, HashServiceError> {
+        self.db.as_mut().unwrap().fluent()
+            .update()
+            .in_col(COLLECTION_NAME)
+            .document_id(&key)
+            .object(value)
+            .execute::<()>()
+            .await?;
+
+        Ok(true)
+    }
+
     async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
         let find_result: Option<LinkInfo> = self.db.as_mut().unwrap().fluent()
             .select()

@@ -40,6 +40,14 @@ impl hashservice::HashService for MongoHashService {
         Ok(new_link)
     }
 
+    async fn update(&mut self, key: &str, value: &LinkInfo) -> Result<bool, HashServiceError> {
+        let update_result = self.collection.as_mut().unwrap().replace_one(
+            doc! { "short_url": key }, value, None
+        ).await?;
+
+        Ok(update_result.modified_count > 0)
+    }
+
     async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
         let find_result = self.collection.as_mut().unwrap().find_one(
             doc! { "short_url": key }, None

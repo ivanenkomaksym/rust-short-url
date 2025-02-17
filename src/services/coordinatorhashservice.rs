@@ -100,6 +100,10 @@ impl hashservice::HashService for CoordinatorHashService {
         Ok(result.unwrap())
     }
 
+    async fn update(&mut self, _: &str, _: &LinkInfo) -> Result<bool, HashServiceError> {
+        todo!()
+    }
+
     async fn find(&mut self, key: &str) -> Result<Option<LinkInfo>, HashServiceError> {
         let mut result: Option<LinkInfo> = None;
 

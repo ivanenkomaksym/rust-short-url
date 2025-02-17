@@ -34,6 +34,16 @@ impl hashservice::HashService for InMemoryHashService {
         return Ok(new_link)
     }
 
+    async fn update(&mut self, key: &str, value: &LinkInfo) -> Result<bool, HashServiceError> {
+        match self.urls.get_mut(key) {
+            None => return Ok(false),
+            Some(link) => {
+                *link = value.clone();
+                return Ok(true)
+            }
+        }
+    }
+
     async fn get_links(&mut self, query_params: Option<QueryParams>) -> Result<Vec<LinkInfo>, HashServiceError>
     {
         let urls = self.urls.iter().map(|key_value| key_value.1.clone()).collect();
