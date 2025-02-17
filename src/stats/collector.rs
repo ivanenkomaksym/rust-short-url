@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use reqwest::blocking::get;
 use serde_json::Value;
 
-async fn collect_stats(headers: HeaderMap) {
+pub(crate) async fn collect_stats(headers: &HeaderMap) {
     let ip = extract_ip(&headers);
     let language = extract_language(&headers);
     let device_info = extract_device_info(&headers);
@@ -29,11 +29,12 @@ fn extract_language(headers: &HeaderMap) -> Option<String> {
 fn extract_device_info(headers: &HeaderMap) -> Option<String> {
     if let Some(user_agent) = headers.get("User-Agent") {
         if let Ok(ua_str) = user_agent.to_str() {
-            let ua_parser: UserAgentParser = UserAgentParser::from_str(ua_str)?;
+            let ua_parser = UserAgentParser::from_path("regexes.yaml").unwrap();
             return Some(format!(
-                "OS: {:#?}, Device: {:#?}",
-                ua_parser.parse_os(ua_str),
-                ua_parser.parse_device(ua_str)
+                "OS: {:#?}, Device: {:#?}, Product: {:#?}",
+                ua_parser.parse_os(ua_str).name,
+                ua_parser.parse_device(ua_str).name,
+                ua_parser.parse_product(ua_str).name
             ));
         }
     }

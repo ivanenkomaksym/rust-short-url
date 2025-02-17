@@ -2,10 +2,11 @@ use crate::configuration::settings::Settings;
 use crate::constants::{APPLICATION_JSON, TEXT_HTML};
 use crate::models::queryparams::QueryParams;
 use crate::services::hashservice::HashService;
+use crate::stats::collector;
 
 use actix_cors::Cors;
 use actix_web::dev::Service;
-use actix_web::{http, middleware, web, App, HttpResponse};
+use actix_web::{http, middleware, web, App, HttpRequest, HttpResponse};
 use actix_web::HttpServer;
 use std::io;
 use std::sync::{Mutex, Arc};
@@ -112,7 +113,9 @@ pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<
 }
 
 #[get("/{short_url}")]
-async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
+async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>, req: HttpRequest) -> HttpResponse {
+    collector::collect_stats(req.headers()).await; // Collect stats
+
     let short_url = path.into_inner();
     if short_url.is_empty() {
         return HttpResponse::BadRequest()
