@@ -2,7 +2,7 @@
 mod tests {
     use actix_web::{test, App, web, middleware, dev::Service, http};
     use std::sync::{Arc, Mutex};
-    use rust_short_url::{services::hashservicefactory::create_hash_service, api::{httpserver::{hello, shorten, redirect, summary, AppData}, ratelimitermiddleware::{RateLimiterMiddlewareService, UserError}, ratelimiter::RateLimiter}, configuration::settings::{Settings, ApiServer, RateLimit}};
+    use rust_short_url::{api::{httpserver::{hello, redirect, shorten, summary, AppData}, ratelimiter::RateLimiter, ratelimitermiddleware::{RateLimiterMiddlewareService, UserError}}, configuration::settings::{ApiServer, RateLimit, Settings}, models::linkinfo::LinkInfo, services::hashservicefactory::create_hash_service};
 
     #[actix_web::test]
     async fn test_index_get() {
@@ -25,6 +25,33 @@ mod tests {
         let req = test::TestRequest::get().uri("/hello").to_request();
         let resp = test::call_service(&app, req).await;
         assert!(resp.status().is_success());
+    }
+
+    #[actix_web::test]
+    async fn test_shorten() {
+        // Arrange
+        let long_url = "https://doc.rust-lang.org/1";
+        let settings = setup_settings();
+        let hash_service = create_hash_service(&settings).await.unwrap();
+        let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
+
+        let app = test::init_service({
+            App::new()
+                // enable logger - always register actix-web Logger middleware last
+                .wrap(middleware::Logger::default())
+                // register HTTP requests handlers
+                .service(web::resource("/shorten").route(web::get().to(shorten)))
+                .app_data(web::Data::clone(&appdata))
+        }).await;
+        
+        // Act
+        let req = test::TestRequest::get().uri(&format!("/shorten?long_url={}", long_url)).to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_success());
+
+        // Assert
+        let link_info: LinkInfo = test::read_body_json(resp).await;
+        assert_eq!(link_info.long_url, long_url);
     }
 
     #[actix_web::test]
