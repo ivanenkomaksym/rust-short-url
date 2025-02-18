@@ -3,9 +3,9 @@ use user_agent_parser::UserAgentParser;
 use reqwest::blocking::get;
 use serde_json::Value;
 
-use crate::models::analytic;
+use crate::models::analytic::{self, Analytic};
 
-pub(crate) async fn collect_stats(headers: &HeaderMap) {
+pub(crate) async fn collect_stats(headers: &HeaderMap) -> Analytic {
     let language = extract_language(&headers);
     let ip = extract_ip(&headers);
     let os = extract_os(&headers);
@@ -18,7 +18,7 @@ pub(crate) async fn collect_stats(headers: &HeaderMap) {
         location
     };
 
-    println!("{:?}", analytic); // Store it in DB instead
+    analytic
 }
 
 fn extract_language(headers: &HeaderMap) -> Option<String> {

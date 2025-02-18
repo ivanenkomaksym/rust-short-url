@@ -114,7 +114,7 @@ pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<
 
 #[get("/{short_url}")]
 async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>, req: HttpRequest) -> HttpResponse {
-    collector::collect_stats(req.headers()).await; // Collect stats
+    let analytic = collector::collect_stats(req.headers()).await;
 
     let short_url = path.into_inner();
     if short_url.is_empty() {
@@ -131,7 +131,7 @@ async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>, r
                         .finish();
                 }
                 Some(mut value) => {
-                    value.clicks += 1;
+                    value.analytics.push(analytic);
                     data.hash_service.update(&short_url, &value).await.unwrap();
                     value.long_url.clone()
                 }
