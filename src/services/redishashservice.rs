@@ -60,12 +60,7 @@ impl hashservice::HashService for RedisHashService {
             return Ok(None);
         }
 
-        let mut found_link = found_links.first().unwrap().clone();
-        found_link.clicks += 1;
-
-        self.connection.as_mut().unwrap().json_set::<_, _, _, LinkInfo>(key.to_string(), "$", &found_link)?;
-
-        return Ok(Some(found_link));
+        return Ok(Some(found_links.first().unwrap().clone()));
     }
 
     async fn delete(&mut self, key: &str) -> Result<bool, HashServiceError> {

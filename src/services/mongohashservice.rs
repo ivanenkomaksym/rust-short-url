@@ -53,13 +53,7 @@ impl hashservice::HashService for MongoHashService {
             doc! { "short_url": key }, None
         ).await?;
         
-        let mut unwrapped_result = match find_result {
-            Some(value) => value,
-            None => return Ok(None),
-        };
-        
-        unwrapped_result.clicks += 1;
-        return Ok(Some(unwrapped_result))
+        return Ok(find_result)
     }
 
     async fn delete(&mut self, key: &str) -> Result<bool, HashServiceError> {

@@ -130,7 +130,11 @@ async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>, r
                     return HttpResponse::NotFound()
                         .finish();
                 }
-                Some(value) => value.long_url.clone()
+                Some(mut value) => {
+                    value.clicks += 1;
+                    data.hash_service.update(&short_url, &value).await.unwrap();
+                    value.long_url.clone()
+                }
             }
         },
         Err(err) => {

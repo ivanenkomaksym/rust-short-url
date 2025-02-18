@@ -92,21 +92,10 @@ impl hashservice::HashService for FirestoreHashService {
             .one(&key)
             .await?;
 
-        let mut found_link = match find_result {
+        let found_link = match find_result {
             Some(value) => value,
             None => return Ok(None),
-        };        
-        
-        found_link.clicks += 1;
-
-        self.db.as_mut().unwrap().fluent()
-            .update()
-            .fields(paths!(LinkInfo::clicks)) // Update only specified fields
-            .in_col(COLLECTION_NAME)
-            .document_id(&key)
-            .object(&found_link)
-            .execute::<()>()
-            .await?;
+        };
 
         return Ok(Some(found_link))
     }
