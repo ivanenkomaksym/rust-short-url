@@ -1,5 +1,4 @@
-use crate::{services::hashservice, models::{linkinfo::LinkInfo, queryparams::QueryParams}, configuration};
-
+use crate::{configuration, models::{builders::build_link_info, linkinfo::LinkInfo, queryparams::QueryParams}, services::hashservice};
 use async_trait::async_trait;
 use redis::{Commands, JsonCommands};
 
@@ -31,11 +30,7 @@ impl hashservice::HashService for RedisHashService {
     async fn insert(&mut self, value: &str) -> Result<LinkInfo, HashServiceError> {
         let hash_value = hashfunction::hash(value);
 
-        let new_link = LinkInfo{
-            short_url: hash_value.clone(),
-            long_url: String::from(value),
-            clicks: 0
-        };
+        let new_link = build_link_info(hash_value.clone(), String::from(value));
         
         self.connection.as_mut().unwrap().json_set::<_, _, _, LinkInfo>(&hash_value, "$", &new_link)?;
 

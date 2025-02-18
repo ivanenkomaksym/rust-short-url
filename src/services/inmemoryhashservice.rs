@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{services::hashservice, services::hashfunction, models::{linkinfo::LinkInfo, queryparams::QueryParams}};
+use crate::{models::{builders::build_link_info, linkinfo::LinkInfo, queryparams::QueryParams}, services::{hashfunction, hashservice}};
 
 use async_trait::async_trait;
 
@@ -23,11 +23,7 @@ impl hashservice::HashService for InMemoryHashService {
     async fn insert(&mut self, value: &str) -> Result<LinkInfo, HashServiceError> {
         let hash_value = hashfunction::hash(value);
 
-        let new_link = LinkInfo {
-            long_url: value.to_string(),
-            short_url: hash_value.clone(),
-            clicks: 0
-        };
+        let new_link = build_link_info(hash_value.clone(), String::from(value));
 
         self.urls.entry(hash_value.clone()).or_insert(new_link.clone());
 

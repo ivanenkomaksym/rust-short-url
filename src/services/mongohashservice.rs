@@ -1,4 +1,4 @@
-use crate::{configuration, models::{linkinfo::LinkInfo, queryparams::QueryParams}, services::{hashfunction, hashservice}};
+use crate::{configuration, models::{builders::build_link_info, linkinfo::LinkInfo, queryparams::QueryParams}, services::{hashfunction, hashservice}};
 use futures_util::TryStreamExt;
 use mongodb::{ bson::doc, options::{ ClientOptions, ServerApi, ServerApiVersion }, Client, Collection };
 
@@ -30,11 +30,7 @@ impl hashservice::HashService for MongoHashService {
             return Ok(find_result.unwrap());
         }
         
-        let new_link = LinkInfo{
-            short_url: hash_value.clone(),
-            long_url: String::from(value),
-            clicks: 0
-        };
+        let new_link = build_link_info(hash_value.clone(), String::from(value));
 
         self.collection.as_mut().unwrap().insert_one(new_link.clone(), None).await?;
         Ok(new_link)

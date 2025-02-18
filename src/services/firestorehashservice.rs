@@ -59,7 +59,8 @@ impl hashservice::HashService for FirestoreHashService {
         let new_link = LinkInfo{
             short_url: hash_value.clone(),
             long_url: String::from(value),
-            clicks: 0
+            clicks: 0,
+            analytics: Vec::new()
         };
 
         self.db.as_mut().unwrap().fluent()
