@@ -90,6 +90,8 @@ mod tests {
     async fn test_summary() {
         // Arrange
         let long_url = "https://doc.rust-lang.org/1";
+        let ip = "192.1.1.1";
+        let expected_location = "Cambridge, United States";
         let settings = setup_settings();
         let hash_service = create_hash_service(&settings).await.unwrap();
         let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
@@ -114,7 +116,10 @@ mod tests {
         let short_url = shorten_link_info.short_url;
 
         // Act - navigate
-        let req = test::TestRequest::get().uri(&format!("/{}", short_url)).to_request();
+        let req = test::TestRequest::get()
+            .uri(&format!("/{}", short_url))
+            .insert_header(("X-Forwarded-For", ip))
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert!(resp.status().is_redirection());
 
@@ -125,6 +130,8 @@ mod tests {
         let summary_link_info: LinkInfo = test::read_body_json(summary_resp).await;
         assert_eq!(summary_link_info.long_url, long_url);
         assert_eq!(summary_link_info.analytics.len(), 1);
+        assert_eq!(summary_link_info.analytics[0].ip, Some(ip.to_string()));
+        assert_eq!(summary_link_info.analytics[0].location, Some(expected_location.to_string()));
     }
 
     #[actix_web::test]
