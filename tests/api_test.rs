@@ -55,6 +55,79 @@ mod tests {
     }
 
     #[actix_web::test]
+    async fn test_redirect() {
+        // Arrange
+        let long_url = "https://doc.rust-lang.org/1";
+        let settings = setup_settings();
+        let hash_service = create_hash_service(&settings).await.unwrap();
+        let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
+
+        let app = test::init_service({
+            App::new()
+                // enable logger - always register actix-web Logger middleware last
+                .wrap(middleware::Logger::default())
+                // register HTTP requests handlers
+                .service(web::resource("/shorten").route(web::get().to(shorten)))
+                .service(redirect)
+                .app_data(web::Data::clone(&appdata))
+        }).await;
+        
+        // Act - shorten
+        let shorten_req = test::TestRequest::get().uri(&format!("/shorten?long_url={}", long_url)).to_request();
+        let shorten_req_resp = test::call_service(&app, shorten_req).await;
+        assert!(shorten_req_resp.status().is_success());
+        let shorten_link_info: LinkInfo = test::read_body_json(shorten_req_resp).await;
+        assert_eq!(shorten_link_info.long_url, long_url);
+        let short_url = shorten_link_info.short_url;
+
+        // Assert
+        let req = test::TestRequest::get().uri(&format!("/{}", short_url)).to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_redirection());
+    }
+
+    #[actix_web::test]
+    async fn test_summary() {
+        // Arrange
+        let long_url = "https://doc.rust-lang.org/1";
+        let settings = setup_settings();
+        let hash_service = create_hash_service(&settings).await.unwrap();
+        let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
+
+        let app = test::init_service({
+            App::new()
+                // enable logger - always register actix-web Logger middleware last
+                .wrap(middleware::Logger::default())
+                // register HTTP requests handlers
+                .service(web::resource("/shorten").route(web::get().to(shorten)))
+                .service(redirect)
+                .service(summary)
+                .app_data(web::Data::clone(&appdata))
+        }).await;
+        
+        // Act - shorten
+        let shorten_req = test::TestRequest::get().uri(&format!("/shorten?long_url={}", long_url)).to_request();
+        let shorten_req_resp = test::call_service(&app, shorten_req).await;
+        assert!(shorten_req_resp.status().is_success());
+        let shorten_link_info: LinkInfo = test::read_body_json(shorten_req_resp).await;
+        assert_eq!(shorten_link_info.long_url, long_url);
+        let short_url = shorten_link_info.short_url;
+
+        // Act - navigate
+        let req = test::TestRequest::get().uri(&format!("/{}", short_url)).to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_redirection());
+
+        // Assert
+        let summary_req = test::TestRequest::get().uri(&format!("/{}/summary", short_url)).to_request();
+        let summary_resp = test::call_service(&app, summary_req).await;
+        assert!(summary_resp.status().is_success());
+        let summary_link_info: LinkInfo = test::read_body_json(summary_resp).await;
+        assert_eq!(summary_link_info.long_url, long_url);
+        assert_eq!(summary_link_info.analytics.len(), 1);
+    }
+
+    #[actix_web::test]
     async fn test_rate_limit() {
         let settings = setup_settings();
         let hash_service = create_hash_service(&settings).await.unwrap();
