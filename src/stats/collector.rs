@@ -1,6 +1,5 @@
 use actix_web::http::header::HeaderMap;
 use user_agent_parser::UserAgentParser;
-use reqwest::blocking::get;
 use serde_json::Value;
 
 use crate::models::analytic::{self, Analytic};
@@ -9,7 +8,10 @@ pub(crate) async fn collect_stats(headers: &HeaderMap) -> Analytic {
     let language = extract_language(&headers);
     let ip = extract_ip(&headers);
     let os = extract_os(&headers);
-    let location = ip.as_deref().map_or(None, extract_geolocation);
+    let location = match ip.clone() {
+        Some(value) => extract_geolocation(&value).await,
+        None => None        
+    };
 
     let analytic = analytic::Analytic {
         language,
@@ -46,10 +48,10 @@ fn extract_ip(headers: &HeaderMap) -> Option<String> {
         .map(|s| s.split(',').next().unwrap_or("").to_string())
 }
 
-fn extract_geolocation(ip: &str) -> Option<String> {
+async fn extract_geolocation(ip: &str) -> Option<String> {
     let url = format!("http://ip-api.com/json/{}", ip);
-    if let Ok(response) = get(&url) {
-        if let Ok(json) = response.json::<Value>() {
+    if let Ok(response) = reqwest::get(&url).await {
+        if let Ok(json) = response.json::<Value>().await {
             if let (Some(country), Some(city)) = (json["country"].as_str(), json["city"].as_str()) {
                 return Some(format!("{}, {}", city, country));
             }
