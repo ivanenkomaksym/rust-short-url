@@ -131,7 +131,10 @@ async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>, r
                         .finish();
                 }
                 Some(mut value) => {
-                    value.analytics.push(analytic);
+                    if value.analytics.is_none() {
+                        value.analytics = Some(Vec::new());
+                    }
+                    value.analytics.as_mut().unwrap().push(analytic);
                     data.hash_service.update(&short_url, &value).await.unwrap();
                     value.long_url.clone()
                 }

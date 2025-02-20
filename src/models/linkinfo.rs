@@ -7,5 +7,5 @@ use super::analytic::Analytic;
 pub struct LinkInfo {
     pub short_url: String,
     pub long_url: String,
-    pub analytics: Vec<Analytic>,
+    pub analytics: Option<Vec<Analytic>>,
 }
