@@ -10,6 +10,7 @@ actix-cors = "0.7.0"
 actix-rt = "2.9.0"
 actix-web = "4.4.0"
 async-trait = "0.1.74"
+chrono = "0.4.39"
 clap = { version = "4.4.11", features = ["derive"] }
 config = "0.13.4"
 derive_more = "0.99.17"

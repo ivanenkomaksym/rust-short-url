@@ -14,6 +14,7 @@ pub(crate) async fn collect_stats(headers: &HeaderMap) -> Analytic {
     };
 
     let analytic = analytic::Analytic {
+        created_at: chrono::Utc::now(),
         language,
         ip,
         os,
