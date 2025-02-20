@@ -64,7 +64,6 @@ impl hashservice::HashService for InMemoryHashService {
         match self.urls.get_mut(key) {
             None => return Ok(None),
             Some(value) => {
-                value.clicks += 1;
                 return Ok(Some(value.clone())) // Directly return the mutable reference to value
             }
         }

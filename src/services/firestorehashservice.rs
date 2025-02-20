@@ -1,4 +1,4 @@
-use crate::{services::hashservice, models::{linkinfo::LinkInfo, queryparams::QueryParams}, configuration};
+use crate::{configuration, models::{builders::build_link_info, linkinfo::LinkInfo, queryparams::QueryParams}, services::hashservice};
 
 use firestore::*;
 use async_trait::async_trait;
@@ -56,12 +56,7 @@ impl hashservice::HashService for FirestoreHashService {
             return Ok(find_result.unwrap());
         }
         
-        let new_link = LinkInfo{
-            short_url: hash_value.clone(),
-            long_url: String::from(value),
-            clicks: 0,
-            analytics: Vec::new()
-        };
+        let new_link = build_link_info(hash_value.clone(), String::from(value));
 
         self.db.as_mut().unwrap().fluent()
             .insert()

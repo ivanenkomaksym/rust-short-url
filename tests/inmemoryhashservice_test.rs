@@ -83,7 +83,6 @@ mod tests {
         
         assert_eq!(actual_linkinfo.short_url, inserted.short_url);
         assert_eq!(actual_linkinfo.long_url, expected_long_url);
-        assert_eq!(actual_linkinfo.clicks, expected_clicks);
     }
 
     #[actix_rt::test]
