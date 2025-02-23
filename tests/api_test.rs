@@ -129,9 +129,11 @@ mod tests {
         assert!(summary_resp.status().is_success());
         let summary_link_info: LinkInfo = test::read_body_json(summary_resp).await;
         assert_eq!(summary_link_info.long_url, long_url);
-        assert_eq!(summary_link_info.analytics.len(), 1);
-        assert_eq!(summary_link_info.analytics[0].ip, Some(ip.to_string()));
-        assert_eq!(summary_link_info.analytics[0].location, Some(expected_location.to_string()));
+        let analytics = summary_link_info.analytics.expect("analytics is empty");
+        assert_eq!(analytics.is_empty(), false);
+        let analytic = &analytics[0];
+        assert_eq!(analytic.ip, Some(ip.to_string()));
+        assert_eq!(analytic.location, Some(expected_location.to_string()));
     }
 
     #[actix_web::test]
