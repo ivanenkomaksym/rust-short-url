@@ -4,7 +4,7 @@ use serde_json::Value;
 
 use crate::models::analytic::{self, Analytic};
 
-pub(crate) async fn collect_stats(headers: &HeaderMap) -> Analytic {
+pub async fn collect_stats(headers: &HeaderMap) -> Analytic {
     let language = extract_language(&headers);
     let ip = extract_ip(&headers);
     let os = extract_os(&headers);
@@ -34,7 +34,10 @@ fn extract_language(headers: &HeaderMap) -> Option<String> {
 fn extract_os(headers: &HeaderMap) -> Option<String> {
     if let Some(user_agent) = headers.get("User-Agent") {
         if let Ok(ua_str) = user_agent.to_str() {
-            let ua_parser = UserAgentParser::from_path("regexes.yaml").unwrap();
+            let ua_parser = match UserAgentParser::from_path("regexes.yaml") {
+                Ok(parser) => parser,
+                Err(_) => return None
+            };
             return Some(ua_parser.parse_os(ua_str).name.unwrap().to_string());
         }
     }
