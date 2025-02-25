@@ -114,6 +114,11 @@ pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<
 
 #[get("/{short_url}")]
 async fn redirect(path: web::Path<String>, appdata: web::Data<Mutex<AppData>>, req: HttpRequest) -> HttpResponse {
+    log::info!("Request headers:");
+    for (name, value) in req.headers().iter() {
+        log::info!("{}: {:?}", name, value);
+    }
+
     let analytic = collector::collect_stats(req.headers()).await;
 
     let short_url = path.into_inner();
