@@ -9,6 +9,7 @@
 # https://github.com/docker/awesome-compose
 services:
   rust-short-url-server:
+    image: ivanenkomak/rust-short-url:latest
     pull_policy: always
     build:
       context: .
