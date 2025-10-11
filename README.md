@@ -1,6 +1,8 @@
 # Rust Short URL Service
 
-Simple URL shortening service written in Rust. The service provides a basic API allowing clients to pass a long URL and receive a shortened version for easy access and sharing.
+⚡ **High-performance, cloud-ready URL shortening service built with Rust featuring distributed coordination, real-time analytics, and multiple storage backends including Firestore, MongoDB, and Redis.**
+
+URL shortening service written in Rust. The service provides a basic API allowing clients to pass a long URL and receive a shortened version for easy access and sharing.
 
 ```
 Usage: rust-short-url.exe [OPTIONS]
@@ -32,6 +34,17 @@ HTTP server exposes several endpoints for the clients, such as:
 * GET /{short_url} - redirect to url behind this shortened version
 * GET /{short_url}/summary - get summary information about provided short url
 ![Alt text](docs/httpserver.png?raw=true "HTTP Server")
+
+## Statistics Collection
+The service automatically collects analytics data whenever users navigate through short URLs. When a user visits a shortened URL (e.g., `/{short_url}`), the system captures and stores the following information:
+
+* **Language**: Extracted from the `Accept-Language` HTTP header to determine the user's preferred language
+* **Operating System**: Parsed from the `User-Agent` HTTP header using regex patterns to identify the user's operating system
+* **IP Address**: Retrieved from `X-Forwarded-For` header (if behind a proxy) or `Remote-Addr` header
+* **Geolocation**: Resolved from the IP address using an external geolocation API to determine the user's approximate location (city and country)
+* **Timestamp**: Records when the short URL was accessed
+
+This analytics data is stored with each URL entry and can be retrieved via the `/{short_url}/summary` endpoint, providing valuable insights into how and where the shortened URLs are being used. The statistics collection is transparent to users and doesn't affect the redirect performance.
 
 ## Data replication
 The application can be launched in coordinator mode, coexisting with multiple regular instances within the same deployment. To enable coordination, a list of hostnames for these instances must be provided. In this mode, the application constructs a hash ring that encompasses all instances. Upon receiving a request, it forwards the request to all other machines, awaits acknowledgments from each, and then returns a response.
@@ -160,7 +173,7 @@ curl -X GET "http://localhost/shorten?long_url=https://doc.rust-lang.org/"
 
 The response will contain a short URL, e.g., `localhost/1C96D51A`.
 
-You can now use `localhost/1C96D51A` as the shortened URL.
+You can now use `localhost/1C96D51A` as the shortened URL. Each time someone accesses this shortened URL, the service automatically collects anonymous analytics data (language, OS, IP address, and geolocation) for usage statistics.
 
 # Cloud Deployment Architecture
 
