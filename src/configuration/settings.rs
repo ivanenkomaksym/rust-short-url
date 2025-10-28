@@ -26,7 +26,10 @@ impl fmt::Display for Mode {
 pub struct ApiServer {
     pub application_url: String,
     pub hostname: String,
-    pub allow_origin: String
+    pub allow_origin: String,
+    pub api_key: Option<String>,
+    #[serde(rename = "GOOGLE_APPLICATION_CREDENTIALS")]
+    pub google_application_credentials: Option<String>
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -153,6 +156,12 @@ pub fn read_settings() -> Result<Settings, ConfigError> {
             }
         }
         Err(_) => {}
+    }
+
+    // Set GOOGLE_APPLICATION_CREDENTIALS environment variable from config if specified
+    if let Some(ref credentials_path) = settings.apiserver.google_application_credentials {
+        env::set_var("GOOGLE_APPLICATION_CREDENTIALS", credentials_path);
+        log::info!("Set GOOGLE_APPLICATION_CREDENTIALS from config: {}", credentials_path);
     }
 
     Ok(settings)
