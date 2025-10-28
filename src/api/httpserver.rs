@@ -14,6 +14,7 @@ use serde::{Serialize, Deserialize};
 
 use super::ratelimiter::RateLimiter;
 use super::ratelimitermiddleware::RateLimiterMiddlewareService;
+use super::authmiddleware;
 
 #[derive(Debug, Deserialize)]
 pub struct ShortenRequest {
@@ -33,6 +34,7 @@ pub struct AppData {
 pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashService>) -> io::Result<()> {
     let application_url = settings.apiserver.application_url.clone();
     let allow_origin = settings.apiserver.allow_origin.clone();
+    let api_key = settings.apiserver.api_key.clone();
     let rate_limiter = Arc::new(Mutex::new(RateLimiter::new(settings.ratelimit)));
 
     let appdata = web::Data::new(Mutex::new(AppData { settings, hash_service }));
@@ -45,9 +47,10 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
             .allowed_origin_fn(|origin, _req_head| {
                 origin.as_bytes().ends_with(b".ivanenkomak.com")
             })
-            .allowed_methods(vec!["GET", "POST"])
+            .allowed_methods(vec!["GET", "POST", "DELETE"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
+            .allowed_header("X-API-Key")
             .max_age(3600);
 
         App::new()
@@ -56,8 +59,12 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
             .wrap(middleware::Logger::default())
             // register HTTP requests handlers
             .service(hello)
-            .service(urls)
-            //.service(shorten)
+            .service(
+                web::scope("/admin")
+                    .wrap(authmiddleware::ApiKeyMiddleware::new(api_key.clone()))
+                    .service(urls)
+                    .service(delete)
+            )
             .service(web::resource("/shorten").wrap_fn(move|req, srv| 
                 {
                     let rate_limiter = rate_limiter.clone();
@@ -65,7 +72,6 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
                 }).route(web::get().to(shorten)))
             .service(redirect)
             .service(summary)
-            .service(delete)
             .app_data(web::Data::clone(&appdata))
     })
     .bind(application_url)?

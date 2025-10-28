@@ -21,6 +21,19 @@ Options:
 
 ## Settings
 Application settings can be configured in `development.toml` or `production.toml` files. Possible configurations include mode of the application, API server configuration, database connection, rate limiting and coordinator options.
+
+### API Key Authentication
+To secure admin endpoints, configure an API key in your settings file:
+```toml
+[apiserver]
+application_url = "localhost:80"
+hostname = "localhost"
+allow_origin = "http://localhost:4200"
+api_key = "your-secret-api-key-here"
+```
+
+If no `api_key` is configured, admin endpoints will be accessible without authentication (not recommended for production).
+
 ![Alt text](docs/settings.png?raw=true "Application settings")
 
 ## HashService
@@ -29,10 +42,16 @@ The `HashService` trait represents a service responsible for managing urls opera
 
 ## HTTP Server
 HTTP server exposes several endpoints for the clients, such as:
-* GET /urls - get all urls
+* GET /urls - get all urls  
 * GET /shorten?long_url{url} - shorten given long url
 * GET /{short_url} - redirect to url behind this shortened version
 * GET /{short_url}/summary - get summary information about provided short url
+
+### Admin Endpoints (API Key Required)
+Admin endpoints require authentication via API key in the `X-API-Key` header:
+* GET /admin/urls - get all urls (requires API key authentication)
+* DELETE /admin/{short_url} - delete a specific short url (requires API key authentication)
+
 ![Alt text](docs/httpserver.png?raw=true "HTTP Server")
 
 ## Statistics Collection
@@ -143,7 +162,18 @@ This application supports integration with Google Firestore when the configurati
         ```
 
 5. **Set the Application Credentials**
-   - In your terminal, set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of your JSON key file:
+   You can set the `GOOGLE_APPLICATION_CREDENTIALS` in two ways:
+   
+   **Option A: Via Configuration File (Recommended)**
+   - Add the path to your configuration file (e.g., `development.toml` or `production.toml`):
+     ```toml
+     [apiserver]
+     GOOGLE_APPLICATION_CREDENTIALS = "D:\\Downloads\\urlshortener-445813-7cb90fbf70f8.json"
+     ```
+     The application will automatically set the environment variable from this configuration.
+   
+   **Option B: Via Environment Variable**
+   - Set the environment variable manually in your terminal:
      ```powershell
      $env:GOOGLE_APPLICATION_CREDENTIALS="D:\Downloads\urlshortener-445813-7cb90fbf70f8.json"
      ```
@@ -151,6 +181,8 @@ This application supports integration with Google Firestore when the configurati
      ```bash
      export GOOGLE_APPLICATION_CREDENTIALS="/path/to/urlshortener-445813-7cb90fbf70f8.json"
      ```
+   
+   **Note**: If both the environment variable and configuration file specify credentials, the environment variable takes precedence.
 
 6. **Test locally**
    - Run the application using Cargo:
@@ -166,7 +198,7 @@ This application supports integration with Google Firestore when the configurati
 
 # Usage
 
-Execute a POST request to shorten a URL. Example:
+Execute a GET request to shorten a URL. Example:
 ```
 curl -X GET "http://localhost/shorten?long_url=https://doc.rust-lang.org/"
 ```
@@ -174,6 +206,20 @@ curl -X GET "http://localhost/shorten?long_url=https://doc.rust-lang.org/"
 The response will contain a short URL, e.g., `localhost/1C96D51A`.
 
 You can now use `localhost/1C96D51A` as the shortened URL. Each time someone accesses this shortened URL, the service automatically collects anonymous analytics data (language, OS, IP address, and geolocation) for usage statistics.
+
+## Admin Operations
+
+### List all URLs (requires API key):
+```bash
+curl -X GET "http://localhost/admin/urls" \
+  -H "X-API-Key: your-secret-api-key-here"
+```
+
+### Delete a short URL (requires API key):
+```bash
+curl -X DELETE "http://localhost/admin/1C96D51A" \
+  -H "X-API-Key: your-secret-api-key-here"
+```
 
 # Cloud Deployment Architecture
 
