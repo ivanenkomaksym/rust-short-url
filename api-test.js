@@ -25,7 +25,10 @@ export async function setup() {
 
   for (let i = 0; i < randomLinks.length; i++) {
     const randomLink = randomLinks[i];
-    const response = http.get(`http://localhost/shorten?long_url=${encodeURIComponent(randomLink)}`);
+    const payload = JSON.stringify({ long_url: randomLink });
+    const response = http.post('http://localhost/shorten', payload, {
+      headers: { 'Content-Type': 'application/json' }
+    });
     if (response.status == 200) {
       const linkInfo = response.json();
       linkInfos.push(linkInfo);

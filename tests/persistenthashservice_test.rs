@@ -17,7 +17,9 @@ mod tests {
             { 
                 application_url: String::from("localhost"),
                 hostname: String::from("localhost"),
-                allow_origin: String::from("localhost")
+                allow_origin: String::from("localhost"),
+                api_key: None,
+                google_application_credentials: None,
             },
             mongo_config: Some(MongoConfig { connection_string: String::from("invalid_string"), database_name: String::from("database"), collection_name: String::from("collection") }),
             redis_config: None,

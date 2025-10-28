@@ -43,7 +43,7 @@ The `HashService` trait represents a service responsible for managing urls opera
 ## HTTP Server
 HTTP server exposes several endpoints for the clients, such as:
 * GET /urls - get all urls  
-* GET /shorten?long_url{url} - shorten given long url
+* POST /shorten {"long_url": "https://example.com/"} - shorten given long url
 * GET /{short_url} - redirect to url behind this shortened version
 * GET /{short_url}/summary - get summary information about provided short url
 
@@ -198,9 +198,11 @@ This application supports integration with Google Firestore when the configurati
 
 # Usage
 
-Execute a GET request to shorten a URL. Example:
+Execute a POST request to shorten a URL. Example:
 ```
-curl -X GET "http://localhost/shorten?long_url=https://doc.rust-lang.org/"
+curl -X POST "http://localhost/shorten" \
+  -H "Content-Type: application/json" \
+  -d '{"long_url": "https://doc.rust-lang.org/"}'
 ```
 
 The response will contain a short URL, e.g., `localhost/1C96D51A`.

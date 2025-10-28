@@ -69,7 +69,7 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
                 {
                     let rate_limiter = rate_limiter.clone();
                     RateLimiterMiddlewareService::new(srv, rate_limiter).call(req)
-                }).route(web::get().to(shorten)))
+                }).route(web::post().to(shorten)))
             .service(redirect)
             .service(summary)
             .app_data(web::Data::clone(&appdata))
@@ -102,7 +102,7 @@ async fn urls(query_params: web::Query<QueryParams>, appdata: web::Data<Mutex<Ap
     }
 }
 
-pub async fn shorten(info: web::Query<ShortenRequest>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
+pub async fn shorten(info: web::Json<ShortenRequest>, appdata: web::Data<Mutex<AppData>>) -> HttpResponse {
     let mut data = appdata.lock().unwrap();
     match data.hash_service.insert(&info.long_url).await {
         Err(err) => {

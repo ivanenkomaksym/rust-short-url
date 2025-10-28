@@ -16,7 +16,7 @@ mod tests {
                 .wrap(middleware::Logger::default())
                 // register HTTP requests handlers
                 .service(hello)
-                .service(web::resource("/shorten").route(web::get().to(shorten)))
+                .service(web::resource("/shorten").route(web::post().to(shorten)))
                 .service(redirect)
                 .service(summary)
                 .app_data(web::Data::new(hash_service_arc.clone()))
@@ -40,12 +40,17 @@ mod tests {
                 // enable logger - always register actix-web Logger middleware last
                 .wrap(middleware::Logger::default())
                 // register HTTP requests handlers
-                .service(web::resource("/shorten").route(web::get().to(shorten)))
+                .service(web::resource("/shorten").route(web::post().to(shorten)))
                 .app_data(web::Data::clone(&appdata))
         }).await;
         
         // Act
-        let req = test::TestRequest::get().uri(&format!("/shorten?long_url={}", long_url)).to_request();
+        let payload = format!(r#"{{"long_url":"{}"}}"#, long_url);
+        let req = test::TestRequest::post()
+            .uri("/shorten")
+            .set_payload(payload)
+            .insert_header(("content-type", "application/json"))
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert!(resp.status().is_success());
 
@@ -67,13 +72,18 @@ mod tests {
                 // enable logger - always register actix-web Logger middleware last
                 .wrap(middleware::Logger::default())
                 // register HTTP requests handlers
-                .service(web::resource("/shorten").route(web::get().to(shorten)))
+                .service(web::resource("/shorten").route(web::post().to(shorten)))
                 .service(redirect)
                 .app_data(web::Data::clone(&appdata))
         }).await;
         
         // Act - shorten
-        let shorten_req = test::TestRequest::get().uri(&format!("/shorten?long_url={}", long_url)).to_request();
+        let payload = format!(r#"{{"long_url":"{}"}}"#, long_url);
+        let shorten_req = test::TestRequest::post()
+            .uri("/shorten")
+            .set_payload(payload)
+            .insert_header(("content-type", "application/json"))
+            .to_request();
         let shorten_req_resp = test::call_service(&app, shorten_req).await;
         assert!(shorten_req_resp.status().is_success());
         let shorten_link_info: LinkInfo = test::read_body_json(shorten_req_resp).await;
@@ -101,14 +111,19 @@ mod tests {
                 // enable logger - always register actix-web Logger middleware last
                 .wrap(middleware::Logger::default())
                 // register HTTP requests handlers
-                .service(web::resource("/shorten").route(web::get().to(shorten)))
+                .service(web::resource("/shorten").route(web::post().to(shorten)))
                 .service(redirect)
                 .service(summary)
                 .app_data(web::Data::clone(&appdata))
         }).await;
         
         // Act - shorten
-        let shorten_req = test::TestRequest::get().uri(&format!("/shorten?long_url={}", long_url)).to_request();
+        let payload = format!(r#"{{"long_url":"{}"}}"#, long_url);
+        let shorten_req = test::TestRequest::post()
+            .uri("/shorten")
+            .set_payload(payload)
+            .insert_header(("content-type", "application/json"))
+            .to_request();
         let shorten_req_resp = test::call_service(&app, shorten_req).await;
         assert!(shorten_req_resp.status().is_success());
         let shorten_link_info: LinkInfo = test::read_body_json(shorten_req_resp).await;
@@ -153,21 +168,36 @@ mod tests {
                     {
                         let rate_limiter = rate_limiter.clone();
                         RateLimiterMiddlewareService::new(srv, rate_limiter).call(req)
-                    }).route(web::get().to(shorten)))
+                    }).route(web::post().to(shorten)))
                 .service(redirect)
                 .service(summary)
                 .app_data(web::Data::clone(&appdata))
         }).await;
         
-        let req = test::TestRequest::get().uri("/shorten?long_url=https://doc.rust-lang.org/1").to_request();
+        let payload1 = r#"{"long_url":"https://doc.rust-lang.org/1"}"#;
+        let req = test::TestRequest::post()
+            .uri("/shorten")
+            .set_payload(payload1)
+            .insert_header(("content-type", "application/json"))
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert!(resp.status().is_success());
         
-        let req = test::TestRequest::get().uri("/shorten?long_url=https://doc.rust-lang.org/2").to_request();
+        let payload2 = r#"{"long_url":"https://doc.rust-lang.org/2"}"#;
+        let req = test::TestRequest::post()
+            .uri("/shorten")
+            .set_payload(payload2)
+            .insert_header(("content-type", "application/json"))
+            .to_request();
         let resp = test::call_service(&app, req).await;
         assert!(resp.status().is_success());
         
-        let req = test::TestRequest::get().uri("/shorten?long_url=https://doc.rust-lang.org/3").to_request();
+        let payload3 = r#"{"long_url":"https://doc.rust-lang.org/3"}"#;
+        let req = test::TestRequest::post()
+            .uri("/shorten")
+            .set_payload(payload3)
+            .insert_header(("content-type", "application/json"))
+            .to_request();
         let resp = test::try_call_service(&app, req).await.err();
         match resp {
             Some(err) => {
@@ -193,7 +223,9 @@ mod tests {
             apiserver: ApiServer { 
                 application_url: String::from("localhost"),
                 hostname: String::from("localhost"),
-                allow_origin: String::from("localhost")
+                allow_origin: String::from("localhost"),
+                api_key: Some(String::from("testkey")),
+                google_application_credentials: Some(String::from("credentials.json")),
             },
             mongo_config: None,
             firestore_config: None,
