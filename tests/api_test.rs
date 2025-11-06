@@ -224,7 +224,8 @@ mod tests {
                 application_url: String::from("localhost"),
                 hostname: String::from("localhost"),
                 allow_origin: String::from("localhost"),
-                api_key: Some(String::from("testkey"))
+                api_key: Some(String::from("testkey")),
+                google_application_credentials: Some(String::from("credentials.json")),
             },
             mongo_config: None,
             firestore_config: None,
