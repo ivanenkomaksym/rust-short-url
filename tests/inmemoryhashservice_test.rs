@@ -165,8 +165,7 @@ mod tests {
                 application_url: String::from("localhost"),
                 hostname: String::from("localhost"),
                 allow_origin: String::from("localhost"),
-                api_key: None,
-                google_application_credentials: None,
+                api_key: None
             },
             mongo_config: None,
             redis_config: None,

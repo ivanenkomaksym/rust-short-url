@@ -4,9 +4,8 @@ mode = "Firestore"
 [apiserver]
 application_url = "localhost:80"
 hostname = "localhost"
-allow_origin = "http://localhost:4200"
+allow_origin = "http://localhost:3000"
 api_key = "dev-api-key-12345"
-GOOGLE_APPLICATION_CREDENTIALS = "D:\\Downloads\\urlshortener-445813-7cb90fbf70f8.json"
 
 [firestore_config]
 project_id = "urlshortener-445813"
