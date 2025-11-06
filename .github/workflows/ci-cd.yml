@@ -13,6 +13,7 @@ env:
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY}}
+  GOOGLE_APPLICATION_CREDENTIALS: /secrets/service-account.json
 
 jobs:
   build:
@@ -20,6 +21,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Create secrets directory
+      run: mkdir -p ./secrets
+
+    - name: Copy service account JSON
+      run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > ./secrets/service-account.json
     
     - name: Build
       run: cargo build --verbose
@@ -34,12 +41,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Create secrets directory
-      run: mkdir -p ./secrets
-
-    - name: Copy service account JSON
-      run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" > ./secrets/service-account.json
 
     - name: Cache Docker layers
       uses: actions/cache@v3

@@ -6,6 +6,7 @@ application_url = "0.0.0.0:8080"
 hostname = "localhost"
 allow_origin = "https://surl.ivanenkomak.com"
 # api_key = "your-production-api-key-here"
+GOOGLE_APPLICATION_CREDENTIALS = "/secrets/service-account.json"
 
 [firestore_config]
 project_id = "[project_id]"
