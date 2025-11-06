@@ -47,7 +47,7 @@ pub async fn start_http_server(settings: Settings, hash_service: Box<dyn HashSer
             .allowed_origin_fn(|origin, _req_head| {
                 origin.as_bytes().ends_with(b".ivanenkomak.com")
             })
-            .allowed_methods(vec!["GET", "POST", "DELETE"])
+            .allowed_methods(vec!["GET", "POST", "DELETE", "OPTIONS"])
             .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
             .allowed_header(http::header::CONTENT_TYPE)
             .allowed_header("X-API-Key")
